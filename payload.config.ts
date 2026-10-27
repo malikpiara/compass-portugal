@@ -41,7 +41,7 @@ export default buildConfig({
       },
       // Heading + subtitle above the login form (mirrors the DS admin header).
       beforeLogin: ["/payload/components/LoginIntro#LoginIntro"],
-      // "Admin Hub" header at the top of the nav (mirrors the DS sidebar header).
+      // "Compass Portugal" header at the top of the nav (mirrors the DS sidebar header).
       beforeNavLinks: ["/payload/components/NavHeader#NavHeader"],
       // Reverse links back to the DS team workspace (/insights, /admin). The
       // admin can't share the DS sidebar, so this bridges navigation both ways.

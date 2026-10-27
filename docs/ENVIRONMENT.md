@@ -56,7 +56,7 @@ whether it's required, and whether it's a secret.
 | `DATABASE_URI` | 🔒 | Supabase Postgres connection string. **Prod (Workers) uses the transaction pooler (`:6543`); local/migrations use session/direct.** See `.env.example` for the full rationale — the wrong endpoint has bitten deploys. |
 
 `NEXT_PUBLIC_SITE_URL` isn't strictly required (it falls back to
-`https://lp.lisboaux.com`) but should be set per environment — it drives
+`https://compassportugal.org`) but should be set per environment — it drives
 canonical URLs, the sitemap, and JSON-LD.
 
 ## Optional — feature flags (unset = feature off / fallback)

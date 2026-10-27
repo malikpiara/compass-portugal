@@ -15,7 +15,7 @@ export default function StyleguideIndexPage() {
           Browse the library
         </h1>
         <p className="text-ds-l font-medium text-muted-foreground">
-          Every token, component, and composed block in the Lisbon Project app —
+          Every token, component, and composed block in the Compass Portugal app —
           what each one is for, its exact API, and how to keep the next site
           consistent with the design.
         </p>

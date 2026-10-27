@@ -204,6 +204,10 @@ layers:
       `https://lp.lisboaux.com/webhooks/chatbot-log`. Note: the raw secret and the
       Zap's `Bearer …` value must match byte-for-byte — a trailing newline on the
       Vercel value is the classic 401 cause; set both from one clean clipboard value.
+      **Since the Cloudflare move (2026-10-04) this is not wired:** the Worker has
+      no `CHATBOT_LOG_SECRET`. To reconnect, set the secret and point the Zap at
+      `https://compassportugal.org/webhooks/chatbot-log` (the old host 301s, and a
+      redirected POST is often replayed as a GET).
 - [x] Zap built — Carebot **Logic → "Run Zap" (end of conversation)** trigger →
       **Webhooks by Zapier (POST)** to the endpoint, Payload Type **JSON**, body
       `{ conversation_id, transcript }` mapped from the conversation fields.

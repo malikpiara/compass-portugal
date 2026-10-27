@@ -1,7 +1,7 @@
 # Deployment — Cloudflare Workers (OpenNext)
 
-The Admin Hub (public site + `/admin`) runs on **Cloudflare Workers** through
-the OpenNext adapter (`@opennextjs/cloudflare`). It moved from Vercel on
+Compass Portugal (public site + `/admin`, formerly the Admin Hub) runs on
+**Cloudflare Workers** through the OpenNext adapter (`@opennextjs/cloudflare`). It moved from Vercel on
 2026-10-04, and the Vercel project was deleted the same day. The setup is
 copied from Cherrydock, which made the same move on 2026-09-24
 (`cherrydock/docs/deployment.md` has the longer story behind most rules here).
@@ -24,8 +24,8 @@ and how to deploy, configure, verify and roll back.
 ## Shape of a request
 
 ```
-browser ──▶ Cloudflare (zone lisboaux.com, Malik's account)
-             └─ lp.lisboaux.com/*  ── Worker route ──▶ Worker "lisbon-project"
+browser ──▶ Cloudflare (zone compassportugal.org, Malik's account)
+             └─ compassportugal.org  ── Custom Domain ──▶ Worker "lisbon-project"
                   ├─ a file in .open-next/assets (_next/static, public/) → served directly, no code runs
                   └─ everything else → OpenNext
                         ├─ cached page (SSG/ISR) → regional cache → R2, D1 tag check
@@ -33,8 +33,15 @@ browser ──▶ Cloudflare (zone lisboaux.com, Malik's account)
                         └─ dynamic route / server action / /admin → the Next server → Payload → Supabase
 ```
 
-The `lp` record is a CNAME to `lisboaux.com`, **Proxied**. The route only acts
-on proxied records, so the record must stay Proxied.
+The Custom Domain owns the apex record (deploy created it, with its
+certificate). `www.compassportugal.org` is a proxied placeholder record
+(`AAAA 100::`) that a redirect rule in the same zone sends to the apex.
+
+The old address, `lp.lisboaux.com`, is a CNAME to `lisboaux.com`, **Proxied**,
+with a Worker route that is kept only as a rollback: a redirect rule in the
+`lisboaux.com` zone answers every request with a 301 to the same path on
+`compassportugal.org` before the route runs. See
+[Domain move](#domain-move-2026-10-27).
 
 ## The rules
 
@@ -56,7 +63,7 @@ on proxied records, so the record must stay Proxied.
 4. **Every `NEXT_PUBLIC_*` in `.env.example` must be set for the build.** Next
    inlines them at build time and a missing one becomes `undefined` without an
    error, so `cf.sh build` stops instead. `NEXT_PUBLIC_SITE_URL` is **not** in
-   `.env.local` (dev uses localhost): pass `NEXT_PUBLIC_SITE_URL=https://lp.lisboaux.com`
+   `.env.local` (dev uses localhost): pass `NEXT_PUBLIC_SITE_URL=https://compassportugal.org`
    for a manual build.
 5. **The pg pool hands no socket between requests.** A Worker can't use a
    socket another request opened; Payload's shared pool hung every other
@@ -102,12 +109,12 @@ Settings → Build:
 
 | Setting | Value |
 | --- | --- |
-| Repository / production branch | `malikpiara/lisbon-project-admin-hub` / `main` |
+| Repository / production branch | `malikpiara/compass-portugal` / `main` (renamed from `lisbon-project-admin-hub` on 2026-10-27) |
 | Build command | `pnpm run cf:build` |
 | Deploy command | `bash scripts/cf.sh deploy` (fills the R2 cache and D1 table, then deploys) |
 | Non-production branch builds | **Off.** Branch previews are a second Worker, `lisbon-project-preview` (see below), not Worker versions or Worker Previews. Preview locally with `pnpm run cf:preview`. |
 | API token | A user token with **D1 Edit** (plus Workers Scripts Edit, R2 Edit). `opennextjs-cloudflare deploy` writes the D1 tag table before `wrangler deploy`; Cherrydock's first token needed D1 added by hand. Check it first if a deploy fails at the D1 step. |
-| Build variables | `NEXT_PUBLIC_SITE_URL` = `https://lp.lisboaux.com`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` (rule 4), and as **secrets**: `DATABASE_URI`, `PAYLOAD_SECRET` (the build prerenders from Payload), `GOOGLE_CALENDAR_API_KEY`, `GOOGLE_CALENDAR_ID` (`/calendar` is prerendered; without them it ships empty until its 5-minute revalidate). Not `CLOUDFLARE_API_TOKEN` (rule 3). |
+| Build variables | `NEXT_PUBLIC_SITE_URL` = `https://compassportugal.org`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` (rule 4), and as **secrets**: `DATABASE_URI`, `PAYLOAD_SECRET` (the build prerenders from Payload), `GOOGLE_CALENDAR_API_KEY`, `GOOGLE_CALENDAR_ID` (`/calendar` is prerendered; without them it ships empty until its 5-minute revalidate). Not `CLOUDFLARE_API_TOKEN` (rule 3). |
 
 pnpm comes from `packageManager` in `package.json`.
 
@@ -118,7 +125,7 @@ Vercel's data cache held it the same way.
 ### Manual
 
 ```bash
-NEXT_PUBLIC_SITE_URL=https://lp.lisboaux.com pnpm run cf:deploy
+NEXT_PUBLIC_SITE_URL=https://compassportugal.org pnpm run cf:deploy
 ```
 
 Use `pnpm run cf:deploy`, not `pnpm deploy` (pnpm's own built-in command).
@@ -175,15 +182,18 @@ same repository with the branch as its production branch and
 Margin is RoundTwenty's review layer: one script from `margin.roundtwenty.com`
 that lets people holding a review link comment on any page, `/admin` included.
 `lib/margin.js` decides which builds carry it. The preview Worker always does,
-and so does production while lp.lisboaux.com is the team's review copy
-(2026-10-08). Set `MARGIN_ON_PRODUCTION` to `false` at public launch. The same
+and so does production: Malik keeps it on for the team's reviews (2026-10-08,
+kept through the rename). `MARGIN_ON_PRODUCTION = false` takes it off the live
+site. The same
 switch adds Margin's origin and its curtain's Google Fonts to the CSP, and
 every build stamps the commit in `<meta name="margin-version">`.
 
 A visitor without a link sees nothing, unless the round has a passcode: then
 Margin's curtain covers the page until they type it. Rounds, origins and
 passcodes are managed from the margin repository (`pnpm review …`, see its
-README); a new address must be added to the round with `pnpm review origin add`.
+README); a new address must be added to the round with `pnpm review origin add`
+(`https://compassportugal.org` was added to the Limoncello round on
+2026-10-27; the old host stays listed until it is retired).
 
 ## Configuration and secrets
 
@@ -219,7 +229,7 @@ turning the POST into a GET.
 ## Verify a deploy
 
 ```bash
-H=https://lp.lisboaux.com
+H=https://compassportugal.org
 for u in / /services /calendar /sitemap.xml /robots.txt /llms.txt /login; do
   curl -s -o /dev/null -w "$u %{http_code}\n" $H$u; done   # all 200
 curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" $H/admin   # 307 → /login
@@ -244,8 +254,40 @@ in Workers Logs (lisbon-project → Observability).
    (`lisbon-project-admin-hub.vercel.app` now answers `DEPLOYMENT_NOT_FOUND`),
    and Vercel's GitHub app removed from the repo.
 
+## Domain move (2026-10-27)
+
+The Lisbon Project renamed the product Compass Portugal and moved it from
+`lp.lisboaux.com` to `compassportugal.org` (bought through Cloudflare Registrar,
+zone in Malik's account, auto-renew on).
+
+1. Workers Builds variable `NEXT_PUBLIC_SITE_URL` set to
+   `https://compassportugal.org` *before* the merge: canonical tags, the
+   sitemap, robots.txt, llms.txt and the JSON-LD are fixed at build time.
+2. The merge deployed the `compassportugal.org` Custom Domain
+   (`wrangler.jsonc` `routes`), so both hosts served the same build.
+3. Zone `compassportugal.org`: `AAAA www 100::` (Proxied) and a Single Redirect
+   `www.compassportugal.org` → `https://compassportugal.org` + path, 301, query
+   kept. The domain sends no mail, so `TXT @ "v=spf1 -all"` and
+   `TXT _dmarc "v=DMARC1; p=reject"` stop anyone spoofing it.
+4. Zone `lisboaux.com`, ruleset `http_request_dynamic_redirect`: rule
+   "lp.lisboaux.com → compassportugal.org",
+   `http.host eq "lp.lisboaux.com"` →
+   `concat("https://compassportugal.org", http.request.uri.path)`, 301, query
+   kept. Redirect rules run before Worker routes. Invite and reset links that
+   were already sent keep working, because path and query carry over.
+5. Payload session cookies belong to a host, so everyone signs in once more on
+   the new address.
+
+No webhook was affected: nothing posts to `/webhooks/chatbot-log` (the Worker
+has no `CHATBOT_LOG_SECRET`). A future Zap must use the new host, since a 301
+on a POST is often replayed as a GET.
+
 ## Rollback
 
+- **The domain move:** turn off the `lp.lisboaux.com → compassportugal.org`
+  redirect rule. The old route is still attached, so `lp.lisboaux.com` serves
+  this Worker again at once. Canonical tags keep pointing at the new domain
+  until a build with the old `NEXT_PUBLIC_SITE_URL` ships.
 - **There is no Vercel to go back to.** Switching `lp` to DNS only now points it
   at the `lisboaux.com` origin, not at this site. Keep it Proxied.
 - **A bad build:** revert its merge on `main` (Workers Builds deploys the

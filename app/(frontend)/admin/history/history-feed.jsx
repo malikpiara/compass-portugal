@@ -77,7 +77,7 @@ export function HistoryFeed({ entries }) {
           History
         </h1>
         <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
-          Every change made in the Admin Hub — who, what, and when.
+          Every change made in Compass Portugal Admin — who, what, and when.
         </p>
       </header>
 

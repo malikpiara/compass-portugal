@@ -174,7 +174,7 @@ const buttonVariants = ["default", "secondary", "outline", "ghost", "menu", "des
 
 // Every DS type level with its class recipe, as used on the real pages.
 const TYPE_LEVELS = [
-  { classes: "font-heading text-ds-xxxxl font-bold text-primary", sample: "Admin Hub", usage: "Page hero titles (home hero, article title)" },
+  { classes: "font-heading text-ds-xxxxl font-bold text-primary", sample: "Compass Portugal", usage: "Page hero titles (home hero, article title)" },
   { classes: "font-heading text-ds-xxxl font-bold text-brand-dark", sample: "Services and Information", usage: "Section headings (article sections, home sections)" },
   { classes: "font-heading text-ds-xxl font-bold text-foreground", sample: "Frequently asked questions", usage: "Sub-page and doc headings" },
   { classes: "font-heading text-ds-xl font-bold text-foreground", sample: "Community Tips and Learning", usage: "Sub-section headings, admin editor titles" },
@@ -1853,7 +1853,7 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     category: "System components",
     source: "components/site/site-header.jsx",
     links: [{ label: "View live at /", href: "/" }],
-    description: "Sticky public-site navigation with the Admin Hub lockup (magnifier-house glyph + lisbon project endorsement), menu action, and donate CTA.",
+    description: "Sticky public-site navigation with the product lockup (magnifier-house glyph + lisbon project endorsement), menu action, and donate CTA.",
     preview: <SiteHeader sticky={false} />,
     fullWidthPreview: true,
     previewHeight: 220,
@@ -1876,13 +1876,13 @@ export const COMPONENT_DOCS: ComponentDoc[] = [
     category: "System components",
     source: "components/home/hero.jsx",
     links: [{ label: "View live at /", href: "/" }],
-    description: "Admin Hub landing hero with DS illustration, title block, and embedded quick access cards.",
+    description: "Compass Portugal landing hero with DS illustration, title block, and embedded quick access cards.",
     preview: <Hero />,
     fullWidthPreview: true,
     previewHeight: 760,
     installation: "Import the production home hero.",
     importCode: `import { Hero } from "@/components/home/hero"`,
-    usage: "Use as the first section on the Admin Hub home page.",
+    usage: "Use as the first section on the Compass Portugal home page.",
     composition: [
       "Includes the four quick access cards as part of the Figma hero section.",
       "Uses 56px rounded panel and 135px desktop inner inset.",

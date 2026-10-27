@@ -15,8 +15,8 @@ import { authedPayload } from "@/lib/admin-auth";
 export const metadata = {
   // `absolute` bypasses the root brand template. The admin layout's passthrough
   // template ("%s") only applies to DEEPER segments, not this index page, so
-  // without absolute the root "%s · The Lisbon Project" would double-brand it.
-  title: { absolute: "Admin Hub" },
+  // without absolute the root "%s · Compass Portugal" would double-brand it.
+  title: { absolute: "Admin · Compass Portugal" },
 };
 
 // One card per destination. Grouped to mirror the sidebar (Content / Analytics /
@@ -160,7 +160,7 @@ export default async function AdminDashboard() {
     <div className="mx-auto max-w-5xl px-8 pt-12 pb-28">
       <header>
         <h1 className="font-heading text-ds-xxl font-bold text-foreground">
-          Admin Hub
+          Compass Portugal
         </h1>
         <p className="mt-2 max-w-2xl text-ds-xs font-medium leading-relaxed text-muted-foreground">
           Welcome back{user.name ? `, ${user.name.split(" ")[0]}` : ""} — manage

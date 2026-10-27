@@ -4,7 +4,7 @@ import { StatusScreen } from "@/components/status-screen";
 import { buttonVariants } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Page not found · Lisbon Project",
+  title: "Page not found · Compass Portugal",
 };
 
 // Rendered when a frontend route calls notFound() (e.g. an unknown service or

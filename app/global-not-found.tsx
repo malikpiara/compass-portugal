@@ -12,7 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 // <html>/<body>, global styles, and fonts.
 
 export const metadata = {
-  title: "Page not found · Lisbon Project",
+  title: "Page not found · Compass Portugal",
   description: "The page you are looking for does not exist.",
 };
 

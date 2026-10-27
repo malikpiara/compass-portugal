@@ -80,6 +80,9 @@ These are **content/brand decisions**, not code — flagged rather than changed
   label showing on the public site; it should be the organisation's name/brand.
   (The SEO _title_ has been set to a public value; the visible heading is a copy
   decision.)
+  **Resolved 2026-10-27:** the product is now Compass Portugal, by the Lisbon
+  Project, and the hero says so. The header logo follows once the DS lockup
+  arrives.
 - **Placeholder body copy.** Service topics use Lorem ipsum and every category
   currently shares the same intro sentence, so category pages have near-identical
   descriptions. Real copy will materially improve rankings and click-through.
@@ -100,4 +103,4 @@ These are **content/brand decisions**, not code — flagged rather than changed
 
 Set `NEXT_PUBLIC_SITE_URL` per environment (no trailing slash). It drives
 `metadataBase`, canonicals, the sitemap, robots and JSON-LD. Fallback:
-`https://lp.lisboaux.com`.
+`https://compassportugal.org`.
