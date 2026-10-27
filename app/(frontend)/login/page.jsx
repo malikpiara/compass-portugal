@@ -10,7 +10,7 @@ import { LoginForm } from "./login-form";
 export const metadata = {
   // Absolute title bypasses the public brand template; noindex keeps the login
   // out of search results.
-  title: { absolute: "Sign in · Admin Hub" },
+  title: { absolute: "Sign in · Compass Portugal" },
   robots: { index: false, follow: false },
 };
 
@@ -45,7 +45,7 @@ export default async function LoginPage() {
           <div className="w-full max-w-sm">
             <div className="mb-7 text-center lg:text-left">
               <h1 className="font-heading text-ds-l font-bold text-foreground">
-                Sign in to Admin Hub
+                Sign in to Compass Portugal
               </h1>
               <p className="mt-1.5 text-ds-xs font-medium text-muted-foreground">
                 Use your team account to continue.
@@ -70,7 +70,7 @@ export default async function LoginPage() {
             Supporting people who&rsquo;ve made Lisbon their new home.
           </p>
           <p className="mt-3 text-ds-s font-medium text-brand-300">
-            The Admin Hub is where the team keeps services, topics, and contacts
+            Compass Portugal Admin is where the team keeps services, topics, and contacts
             up to date for our community.
           </p>
         </div>

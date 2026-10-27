@@ -1,7 +1,7 @@
 "use client";
 
 // Header at the top of the Payload admin nav, mirroring the DS team sidebar's
-// header ("Admin Hub" + subtitle). Rendered via admin.components.beforeNavLinks.
+// header ("Compass Portugal" + subtitle). Rendered via admin.components.beforeNavLinks.
 // Quicksand is already applied to the admin subtree (see layout.tsx).
 export function NavHeader() {
   return (
@@ -15,7 +15,7 @@ export function NavHeader() {
           color: "#0a4d48", // brand-dark (brand-700)
         }}
       >
-        Admin Hub
+        Compass Portugal
       </p>
       <p
         style={{

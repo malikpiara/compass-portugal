@@ -15,7 +15,7 @@ import { authedPayload } from "@/lib/admin-auth";
 // auth-gated admin subtree out of search indexes (belt-and-suspenders with
 // robots.ts, which already disallows /admin).
 export const metadata = {
-  title: { template: "%s", default: "Admin Hub" },
+  title: { template: "%s", default: "Admin · Compass Portugal" },
   robots: { index: false, follow: false },
 };
 
@@ -77,7 +77,7 @@ export default async function AdminLayout({ children }) {
           <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b-2 border-border bg-card px-3 md:hidden">
             <SidebarTrigger />
             <span className="font-heading text-ds-s font-bold text-brand-dark">
-              Admin Hub
+              Compass Portugal
             </span>
           </header>
           {/* SidebarInset is a flex column, where a bare `mx-auto max-w-*` page

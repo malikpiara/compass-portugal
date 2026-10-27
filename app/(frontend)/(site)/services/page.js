@@ -10,7 +10,7 @@ import { toPlainText } from "@/lib/rich-text";
 export const metadata = {
   title: "Services and information",
   description:
-    "Browse every Lisbon Project service category — administrative processes, housing, health, education, legal help and more, with tips and mapped external services for migrants and refugees in Lisbon.",
+    "Browse every Compass Portugal service category — administrative processes, housing, health, education, legal help and more, with tips and mapped external services for migrants and refugees in Lisbon.",
   alternates: { canonical: "/services" },
 };
 
@@ -52,7 +52,7 @@ export default async function ServicesIndexPage() {
               Services and information
             </h1>
             <p className="mt-2 max-w-2xl text-ds-s font-medium text-foreground">
-              Everything the Lisbon Project maps for our community — pick a
+              Everything Compass Portugal maps for our community — pick a
               category to see contacts, guides and the most common processes.
             </p>
           </div>

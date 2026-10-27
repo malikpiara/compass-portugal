@@ -1,7 +1,7 @@
 "use client";
 
 // Heading + context above the login form, rendered via admin.components.beforeLogin.
-// Mirrors the DS sidebar/admin header ("Admin Hub" + a one-line subtitle) so the
+// Mirrors the DS sidebar/admin header ("Compass Portugal" + a one-line subtitle) so the
 // sign-in screen reads as ours rather than a bare Payload form. Quicksand is
 // already applied to the admin subtree (see app/(payload)/layout.tsx).
 export function LoginIntro() {
@@ -16,7 +16,7 @@ export function LoginIntro() {
           color: "#0a2422", // brand-900 / brand-dark
         }}
       >
-        Admin Hub
+        Compass Portugal
       </h1>
       <p
         style={{
@@ -26,7 +26,7 @@ export function LoginIntro() {
           color: "#999999", // neutral-500 / muted
         }}
       >
-        Sign in to manage the Lisbon Project content
+        Sign in to manage Compass Portugal content
       </p>
     </div>
   );

@@ -10,7 +10,7 @@ import { WelcomeForm } from "./welcome-form";
 export const metadata = {
   // Absolute title bypasses the public brand template; noindex keeps these
   // one-time links out of search results.
-  title: { absolute: "Set your password · Admin Hub" },
+  title: { absolute: "Set your password · Compass Portugal" },
   robots: { index: false, follow: false },
 };
 
@@ -67,7 +67,7 @@ export default async function WelcomePage({ searchParams }) {
                   {isInvite
                     ? firstName
                       ? `Welcome, ${firstName}`
-                      : "Welcome to Admin Hub"
+                      : "Welcome to Compass Portugal"
                     : "Choose a new password"}
                 </h1>
                 <p className="mt-1.5 text-ds-xs font-medium text-muted-foreground">

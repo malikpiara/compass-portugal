@@ -3,7 +3,7 @@
 **Last updated:** 2026-07-08 · owner: Malik
 
 **Definition of done:** the Lisbon Project team signs in at
-`lp.lisboaux.com`, edits real content, publishes it (directly or via
+`compassportugal.org` (formerly `lp.lisboaux.com`), edits real content, publishes it (directly or via
 review), visitors see that content, and the team gets insights — with
 Malik out of the daily loop (see the builder-relationship principle:
 last-mile choices are handoffs, not tickets to Malik).

@@ -9,7 +9,7 @@ import Link from "next/link";
 // Payload's CSS variables so it sits inside the (brand-green) admin nav.
 const LINKS = [
   { href: "/insights", label: "Insights" },
-  { href: "/admin", label: "Admin Hub" },
+  { href: "/admin", label: "Admin" },
 ];
 
 export function NavLinks() {

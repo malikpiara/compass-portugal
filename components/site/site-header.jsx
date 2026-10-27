@@ -14,7 +14,9 @@ export function SiteHeader({ sticky = true } = {}) {
       )}
     >
       <div className="mx-auto flex min-h-[72px] max-w-[1680px] items-center justify-between px-4 py-4 sm:px-6 lg:px-14">
-        {/* Admin Hub lockup: the DS asset as drawn in the main menu
+        {/* Still the Admin Hub lockup: the Compass Portugal one is coming from
+            Rafael's DS (2026-10-27). Swap the file and the alt text together.
+            The DS asset as drawn in the main menu
             (Figma 3393:7331, "brand" 150×40 at the 56px gutter). One file
             rather than glyph + live text, so the type and spacing are
             exactly the designer's. */}

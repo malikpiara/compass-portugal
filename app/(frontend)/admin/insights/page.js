@@ -11,7 +11,7 @@ import {
 } from "@/lib/posthog-insights";
 
 export const metadata = {
-  title: "Insights · Lisbon Project",
+  title: "Insights · Compass Portugal",
 };
 
 // Team-only analytics, under the /admin group — so it inherits the admin

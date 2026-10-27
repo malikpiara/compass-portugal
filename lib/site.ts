@@ -7,23 +7,26 @@
 //
 // The host is env-driven so the deployment can set its own domain without a code
 // change (the platform is handed off — see the builder-relationship note). The
-// fallback is the planned production subdomain; override with NEXT_PUBLIC_SITE_URL.
+// fallback is the production domain; override with NEXT_PUBLIC_SITE_URL.
 
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://lp.lisboaux.com"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://compassportugal.org"
 ).replace(/\/$/, "");
 
-// Donations are handled on the main charity site, not this admin-hub property.
+// Donations are handled on the main charity site, not this Compass Portugal property.
 // Every "Donate" CTA points here — one place to change the destination.
 export const DONATE_URL = "https://www.lisbonproject.org/donate";
 
 export const SITE = {
-  /** Public-facing brand (logo/hero voice). */
-  name: "The Lisbon Project",
+  /** Product brand (titles, hero, WebSite schema). Compass Portugal is run by
+   * the Lisbon Project: the org facts below stay the charity's own. */
+  name: "Compass Portugal",
+  /** The charity behind the product (endorsement line, Organization schema). */
+  orgName: "The Lisbon Project",
   /** Registered legal entity (footer / privacy). */
   legalName: "Lisbon Project Association",
   description:
-    "The Lisbon Project helps migrants and refugees feel at home in Portugal — mapping services, contacts and the most common administrative processes in Lisbon.",
+    "Compass Portugal, by the Lisbon Project, helps migrants and refugees feel at home in Portugal — mapping services, contacts and the most common administrative processes in Lisbon.",
   locale: "en",
   charityNumber: "PT514343575",
   telephone: "+351964809959",
@@ -75,7 +78,7 @@ export function organizationSchema(facts: OrgFacts = {}) {
     "@context": "https://schema.org",
     "@type": "NGO",
     "@id": `${SITE_URL}/#organization`,
-    name: SITE.name,
+    name: SITE.orgName,
     legalName: SITE.legalName,
     url: SITE_URL,
     logo: absoluteUrl("/lisbon-project-logo.svg"),

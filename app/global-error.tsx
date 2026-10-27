@@ -35,7 +35,7 @@ export default function GlobalError({
       className={`${jetBrainsMono.variable} ${quicksand.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">
-        <title>Something went wrong · Lisbon Project</title>
+        <title>Something went wrong · Compass Portugal</title>
         <StatusScreen
           icon={IconInfo}
           title="Something went wrong"

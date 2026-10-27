@@ -151,7 +151,7 @@ case "$cmd" in
     fi
     # Margin stamps each comment with the commit it was made on
     # (<meta name="margin-version"> in app/(frontend)/layout.js). Every build,
-    # since production carries Margin too while lp.lisboaux.com is the team's
+    # since production carries Margin too while compassportugal.org is the team's
     # review copy (lib/margin.js, 2026-10-08). Workers Builds provides the SHA.
     if [ -z "${MARGIN_VERSION:-}" ] && [ -n "${WORKERS_CI_COMMIT_SHA:-}" ]; then
       export MARGIN_VERSION="${WORKERS_CI_COMMIT_SHA:0:7}"

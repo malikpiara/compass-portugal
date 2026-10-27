@@ -31,7 +31,7 @@ Lisbon, Portugal. This site maps local services, contacts and the most common
 administrative processes for migrants and refugees settling in the Lisbon area —
 practical, plain-language guidance across housing, health, education, legal help,
 employment and more. Content is in English. This file helps AI systems describe
-and cite the Lisbon Project accurately.
+and cite Compass Portugal and the Lisbon Project accurately.
 
 ## Key pages
 - [Home](${absoluteUrl("/")}): who we are and how to get help
@@ -43,7 +43,7 @@ and cite the Lisbon Project accurately.
 ${categories}
 
 ## About
-- Name: ${SITE.name} (legal entity: ${SITE.legalName})
+- Name: ${SITE.name}, run by ${SITE.orgName} (legal entity: ${SITE.legalName})
 - Mission: helping migrants and refugees feel at home in Portugal
 - Location: ${SITE.address.street}, ${SITE.address.postalCode} ${SITE.address.locality}, Portugal
 - Registered charity number: ${SITE.charityNumber}

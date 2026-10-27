@@ -1,4 +1,4 @@
-# Lisbon Project — Admin Hub
+# Compass Portugal, by Lisbon Project
 
 ## About
 
@@ -13,7 +13,9 @@ It's also a programme that gives early-career designers and developers
 hands-on experience on real projects with social impact, guided by mentors
 from the tech industry.
 
-This repository is the **Admin Hub** for the Lisbon Project site rebuild:
+This repository is **Compass Portugal** (formerly the Admin Hub), the Lisbon
+Project's guide for migrants and refugees, live at
+[compassportugal.org](https://compassportugal.org):
 Next.js 16 + React 19 + Tailwind v4 + shadcn (base-nova), on a **Payload CMS
 (Supabase Postgres)** backend. It runs on Cloudflare Workers (moved from Vercel
 2026-10-04, see [docs/deployment.md](docs/deployment.md)) — the public site renders
@@ -66,7 +68,7 @@ setting is on.
 the same fetched payload is served for 5 minutes per server instance. At
 expected traffic this is well under any Google Calendar API quota.
 
-## Admin Hub (`/admin`)
+## Compass Portugal Admin (`/admin`)
 
 `/admin` is the **Payload-backed team workspace** — a custom UI (built from the
 LP design system) over Payload's headless engine: a dashboard, editors for Quick

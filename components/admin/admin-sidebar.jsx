@@ -107,8 +107,8 @@ export function AdminSidebar({
             <IconNotes className="size-4.5" />
           </span>
           <div className="grid leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="font-heading text-ds-s font-bold text-brand-dark">Admin Hub</span>
-            <span className="text-ds-xxs font-medium text-muted-foreground">Team workspace</span>
+            <span className="font-heading text-ds-s font-bold text-brand-dark">Compass Portugal</span>
+            <span className="text-ds-xxs font-medium text-muted-foreground">Admin</span>
           </div>
         </div>
       </SidebarHeader>
