@@ -277,6 +277,23 @@ zone in Malik's account, auto-renew on).
    were already sent keep working, because path and query carry over.
 5. Payload session cookies belong to a host, so everyone signs in once more on
    the new address.
+6. Repository renamed `lisbon-project-admin-hub` → `compass-portugal`. GitHub
+   redirects the old URL. The Workers Builds connection is keyed by repo ID
+   (`1236789178`), so it kept working; its stored name is only a label.
+
+Verified on 2026-10-27, build `4d39f9d`: every route 200 on
+`compassportugal.org` (`/admin` 307 → `/login`), canonicals, sitemap,
+robots.txt and JSON-LD on the new host, Margin stamped with the commit.
+`lp.lisboaux.com` and `www` 301 to the same path and query, the other
+`lisboaux.com` hosts unchanged. A machine that looked the domain up while it
+was still empty caches the miss for up to 30 minutes (SOA minimum 1800 s), so
+check with `dig @1.1.1.1` and `curl --resolve` rather than trusting a local
+"could not resolve".
+
+| Rule | Zone | Ruleset / rule ID |
+| --- | --- | --- |
+| `www.compassportugal.org` → apex | `compassportugal.org` | `a3c264bb…` / `f42b9545…` |
+| `lp.lisboaux.com` → `compassportugal.org` | `lisboaux.com` | `c454fb7e…` / `a4637279…` |
 
 No webhook was affected: nothing posts to `/webhooks/chatbot-log` (the Worker
 has no `CHATBOT_LOG_SECRET`). A future Zap must use the new host, since a 301
