@@ -70,8 +70,8 @@ export default async function LoginPage() {
             Supporting people who&rsquo;ve made Lisbon their new home.
           </p>
           <p className="mt-3 text-ds-s font-medium text-brand-300">
-            Compass Portugal Admin is where the team keeps services, topics, and contacts
-            up to date for our community.
+            This is where the team keeps Compass Portugal&rsquo;s services, topics, and
+            contacts up to date for our community.
           </p>
         </div>
       </div>
