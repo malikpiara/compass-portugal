@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { Check, Search } from "lucide-react";
 
 import { DS_ICONS, DS_ICON_NAMES } from "@/lib/ds-icons-data";
@@ -47,8 +47,8 @@ function iconSize(name: string): number {
 export function IconGallery() {
   const [query, setQuery] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
-  // Filtering reads the deferred value so each change is a Transition — which is
-  // what makes the grid cross-fade via <ViewTransition> below. The input stays
+  // Filtering reads the deferred value, so typing stays snappy on long lists.
+  // (No cross-fade on results: it ran on every keystroke; removed 2026-11-01.) The input stays
   // bound to `query`, so typing is unaffected.
   const deferredQuery = useDeferredValue(query);
 
@@ -113,7 +113,6 @@ export function IconGallery() {
         </p>
       </div>
 
-      <ViewTransition>
         <div className="space-y-8">
       {families.length === 0 ? (
         <div className="rounded-lg border-2 border-dashed border-border px-6 py-12 text-center text-ds-xs font-medium text-muted-foreground">
@@ -166,7 +165,6 @@ export function IconGallery() {
         ))
       )}
         </div>
-      </ViewTransition>
     </div>
     </TooltipProvider>
   );

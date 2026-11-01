@@ -22,8 +22,9 @@ export default async function SiteLayout({ children }) {
           also renders the launcher + panel itself. */}
       <SiteChatShell>
       <SiteHeader />
-      {/* Cross-fade the page content on route change — the same native
-          <ViewTransition> boundary the admin uses (admin/layout.js). The header,
+      {/* Cross-fade the page content on route change (public site only: the
+          admin and /components dropped theirs on 2026-11-01, too frequent there).
+          Native <ViewTransition>. The header,
           footer and chatbot sit outside it, so only the content swaps. Timing +
           reduced-motion live in globals.css (::view-transition-*).
 
@@ -32,8 +33,7 @@ export default async function SiteLayout({ children }) {
           separately. Across routes those per-section names get matched to
           different-position sections on the next page, so each one animates the Y
           delta — the content visibly slides. Wrapping in one element gives the
-          whole page a single name, so it cross-fades as one unit (like the admin
-          and /components pages, which already render a single root element). */}
+          whole page a single name, so it cross-fades as one unit. */}
       <main className="flex-1">
         <ViewTransition>
           <div>{children}</div>

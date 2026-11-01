@@ -6,7 +6,6 @@ import {
   useMemo,
   useRef,
   useState,
-  ViewTransition,
 } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,8 +26,7 @@ export function StyleguideNav({ groups }: { groups: StyleguideNavGroup[] }) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
   // The input is driven by the urgent `query` (typing stays snappy); filtering
-  // reads the deferred value. A deferred update is a Transition, which is what
-  // activates the <ViewTransition> below — so the result list cross-fades.
+  // reads the deferred value. No cross-fade on results (removed 2026-11-01).
   const deferredQuery = useDeferredValue(query);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -67,11 +65,6 @@ export function StyleguideNav({ groups }: { groups: StyleguideNavGroup[] }) {
         aria-label="Search components"
         className="h-10 text-ds-xxs"
       />
-      {/* Only the result list cross-fades — the input sits outside the boundary
-          and stays put. The deferred query (above) makes each filter change a
-          Transition, which is what drives the <ViewTransition>. Timing +
-          reduced-motion come from the global ::view-transition-* rules. */}
-      <ViewTransition>
         <div className="space-y-8">
           {filtered.length === 0 ? (
             <p className="px-2 text-ds-xxs font-medium text-muted-foreground">
@@ -110,7 +103,6 @@ export function StyleguideNav({ groups }: { groups: StyleguideNavGroup[] }) {
             </div>
           ))}
         </div>
-      </ViewTransition>
     </nav>
   );
 }

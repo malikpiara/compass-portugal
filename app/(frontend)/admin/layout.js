@@ -1,4 +1,3 @@
-import { ViewTransition } from "react";
 import { cookies } from "next/headers";
 
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
@@ -85,11 +84,10 @@ export default async function AdminLayout({ children }) {
               block flow so every route's own centering + full max width work
               exactly as they did before the sidebar rebuild. */}
           <div className="min-w-0 flex-1">
-            {/* Cross-fade the content pane on route change. The <ViewTransition>
-                boundary persists while its children swap per route, so React
-                animates old↔new; the sidebar sits outside it and stays put.
-                Timing + reduced-motion live in globals.css (::view-transition-*). */}
-            <ViewTransition>{children}</ViewTransition>
+            {/* No route cross-fade: editors move between admin pages dozens
+                of times a day, and at that frequency any fade reads as delay
+                (removed 2026-11-01). Pages swap instantly. */}
+            {children}
           </div>
         </SidebarInset>
       </SidebarProvider>

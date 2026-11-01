@@ -148,7 +148,7 @@ export function ServicesList({ services, userEmail }) {
                     {service.contactCount === 1 ? "" : "s"}
                   </p>
                 </div>
-                <IconArrowRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                <IconArrowRight className="mt-1 size-4 shrink-0 text-primary" />
               </Link>
               <div className="flex items-center justify-between px-4 xl:px-6">
                 <span className="text-ds-xxs font-bold text-muted-foreground">

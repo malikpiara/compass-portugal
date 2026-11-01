@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   IconArrowRight,
@@ -18,8 +18,8 @@ import { createTopic } from "./actions";
 // articles as cards is a scroll-wall, so filter by title / service / description.
 export function ArticlesList({ topics, defaultServiceId = null }) {
   const [q, setQ] = useState("");
-  // Filtering reads the deferred value so each change is a Transition — which is
-  // what makes the list cross-fade via <ViewTransition> below. The input stays
+  // Filtering reads the deferred value, so typing stays snappy on long lists.
+  // (No cross-fade on results: it ran on every keystroke; removed 2026-11-01.) The input stays
   // bound to `q`, so typing is unaffected.
   const deferredQ = useDeferredValue(q);
 
@@ -80,7 +80,6 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
             {filtered.length} of {topics.length} shown
           </p>
 
-          <ViewTransition>
             <div className="mt-4 space-y-2.5">
               {filtered.map((t) => (
                 <Link
@@ -110,7 +109,7 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
                       {t.serviceTitle}
                     </Tag>
                   ) : null}
-                  <IconArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                  <IconArrowRight className="size-4 shrink-0 text-primary" />
                 </Link>
               ))}
               {filtered.length === 0 ? (
@@ -119,7 +118,6 @@ export function ArticlesList({ topics, defaultServiceId = null }) {
                 </p>
               ) : null}
             </div>
-          </ViewTransition>
         </>
       ) : (
         <div className="mt-8">

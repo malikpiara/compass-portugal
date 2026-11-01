@@ -78,7 +78,7 @@ export default async function AdminContactsPage() {
                     </Tag>
                   ))}
                 </div>
-                <IconArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                <IconArrowRight className="size-4 shrink-0 text-primary" />
               </Link>
             );
           })

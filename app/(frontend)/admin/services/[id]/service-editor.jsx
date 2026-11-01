@@ -358,7 +358,7 @@ export function ServiceEditor({ service, topics, audit, versions = [] }) {
                           </span>
                         ) : null}
                       </span>
-                      <IconArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                      <IconArrowRight className="size-4 shrink-0 text-primary" />
                     </Link>
                     {moved ? (
                       <span className="rounded-full bg-secondary px-2 py-0.5 text-ds-xxs font-bold text-primary">

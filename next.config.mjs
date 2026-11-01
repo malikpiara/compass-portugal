@@ -69,8 +69,8 @@ const nextConfig = {
     globalNotFound: true,
     // Enables React's native <ViewTransition>. App Router runs on the canary
     // React that Next bundles (which includes ViewTransition) — no react@canary
-    // install needed. The admin layout wraps its content pane in one so routes
-    // cross-fade; unsupported browsers just swap instantly. Next 16 VT guide.
+    // install needed. The public (site) layout wraps its content in one so
+    // routes cross-fade; unsupported browsers just swap instantly. Next 16 VT guide.
     viewTransition: true,
   },
   async headers() {

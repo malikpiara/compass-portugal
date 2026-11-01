@@ -1,11 +1,9 @@
 "use client";
 
 import {
-  useDeferredValue,
   useEffect,
   useMemo,
   useState,
-  ViewTransition,
 } from "react";
 
 import { usePostHog } from "posthog-js/react";
@@ -130,14 +128,13 @@ export function ContactsSection({
     [categories]
   );
 
-  // Filtering reads the deferred query so a text-search change is a Transition —
-  // which is what makes the table cross-fade via <ViewTransition> below. The
-  // input stays bound to `query`, so typing is unaffected. (Category changes are
-  // urgent, so switching category doesn't cross-fade — only search does.)
-  const deferredQuery = useDeferredValue(query);
+  // Filters on the typed query directly (78 contacts filter in well under a
+  // frame). Not deferred: a deferred update is a React Transition, which the
+  // public layout's <ViewTransition> would turn into a whole-page cross-fade on
+  // every keystroke.
 
   const filtered = useMemo(() => {
-    const q = deferredQuery.trim().toLowerCase();
+    const q = query.trim().toLowerCase();
     return contacts.filter((c) => {
       if (category !== "all" && !c.categories.includes(category)) return false;
       if (!q) return true;
@@ -149,7 +146,7 @@ export function ContactsSection({
         c.websites.some((w) => w.url.toLowerCase().includes(q))
       );
     });
-  }, [contacts, deferredQuery, category]);
+  }, [contacts, query, category]);
 
   // Analytics: `contacts_searched` (object-action, past tense) — what people search
   // for in the contacts table. Debounced 800ms so we log completed searches, not
@@ -240,7 +237,6 @@ export function ContactsSection({
           {/* table-fixed + explicit column widths: column widths are derived from
               these headers, not the visible cell content — so filtering/searching
               (which changes the row set) never makes the columns jump. */}
-          <ViewTransition>
           {/* Figma table (3393:7224): four equal columns with 24px gutters and a
               narrow Directions column with an icon-only button. The gutters
               are the cells' 12px side padding; the first and last columns sit
@@ -356,7 +352,6 @@ export function ContactsSection({
               ) : null}
             </TableBody>
           </Table>
-          </ViewTransition>
         </div>
        </div>
       </div>

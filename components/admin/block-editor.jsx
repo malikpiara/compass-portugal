@@ -649,16 +649,15 @@ export function SectionBlocks({ blocks, onChange }) {
         </Button>
         {menuOpen ? (
           <div className="mt-2 grid grid-cols-2 gap-2">
-            {BLOCK_TYPES.map((t, i) => {
+            {BLOCK_TYPES.map((t) => {
               const { label, desc, Icon } = BLOCK_META[t];
               return (
-                // Cascade the choices in (same entry-appear + staggered delay as
-                // the dashboard cards); press gives the Button's 1px nudge.
+                // The choices fade in together (no stagger: the menu opens
+                // many times a session); press gives the Button's 1px nudge.
                 <button
                   key={t}
                   type="button"
                   onClick={() => add(t)}
-                  style={{ animationDelay: `${i * 45}ms` }}
                   className="flex animate-entry-appear items-center gap-3 rounded-lg border-2 border-border bg-card p-2.5 text-left transition-all hover:border-primary active:translate-y-px"
                 >
                   <span className="grid size-8 shrink-0 place-items-center rounded-md bg-secondary text-primary">

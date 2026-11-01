@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState, ViewTransition } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
 // Activity glyphs the DS doesn't cover yet (created/edited/submitted/declined/
 // deleted) — kept on lucide, flagged for Rafael. Approved→Check uses the DS.
@@ -53,8 +53,8 @@ function docHref(slug, id) {
 
 export function HistoryFeed({ entries }) {
   const [q, setQ] = useState("");
-  // Filtering reads the deferred value so each change is a Transition — which is
-  // what makes the feed cross-fade via <ViewTransition> below. The input stays
+  // Filtering reads the deferred value, so typing stays snappy on long lists.
+  // (No cross-fade on results: it ran on every keystroke; removed 2026-11-01.) The input stays
   // bound to `q`, so typing is unaffected.
   const deferredQ = useDeferredValue(q);
 
@@ -91,7 +91,6 @@ export function HistoryFeed({ entries }) {
         />
       </div>
 
-      <ViewTransition>
         <div className="mt-4">
         {(() => {
           // Walk the (already newest-first) list and drop in a day header each
@@ -166,7 +165,6 @@ export function HistoryFeed({ entries }) {
           </p>
         ) : null}
         </div>
-      </ViewTransition>
     </div>
   );
 }

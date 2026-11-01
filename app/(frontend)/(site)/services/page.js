@@ -59,16 +59,12 @@ export default async function ServicesIndexPage() {
         </header>
 
         <ul className="grid list-none grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-4">
-          {services.map((service, i) => {
+          {services.map((service) => {
             const Icon = getServiceIcon(
               getServiceIconKey(service.slug, service.iconKey)
             );
             return (
-              <li
-                key={service.slug}
-                className="animate-entry-appear"
-                style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
-              >
+              <li key={service.slug}>
                 <Link
                   href={`/services/${service.slug}`}
                   className="group block rounded-lg focus:outline-none focus-visible:ring-3 focus-visible:ring-ring/35"

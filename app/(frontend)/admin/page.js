@@ -45,7 +45,7 @@ function DashCard({ href, icon: Icon, label, hint, meta }) {
               <p className="mt-3 text-ds-xxs font-bold text-primary">{meta}</p>
             ) : null}
           </div>
-          <IconArrowRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+          <IconArrowRight className="mt-1 size-4 shrink-0 text-primary" />
         </div>
       </Card>
     </Link>

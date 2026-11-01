@@ -352,7 +352,7 @@ function ConversationCard({ c }: { c: EnrichedConversation }) {
           </div>
         </summary>
 
-        <div className="mt-4 space-y-3 border-t-2 border-border pt-4 group-open/conv:animate-in group-open/conv:fade-in group-open/conv:slide-in-from-top-1 group-open/conv:duration-200">
+        <div className="mt-4 space-y-3 border-t-2 border-border pt-4 group-open/conv:animate-in group-open/conv:fade-in group-open/conv:duration-150">
           {turns.length > 0 ? (
             turns.map((t, i) =>
               t.isGreeting ? (

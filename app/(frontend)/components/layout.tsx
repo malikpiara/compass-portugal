@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { ViewTransition } from "react";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -41,12 +40,8 @@ export default function StyleguideLayout({ children }: { children: ReactNode }) 
           </div>
         </aside>
 
-        {/* Cross-fade only the content pane on route change — the header and
-            sidebar nav sit outside the boundary and stay put. Same native
-            <ViewTransition> pattern as admin/layout.js; timing + reduced-motion
-            live in globals.css (::view-transition-*). */}
         <main className="min-w-0 px-6 py-10 lg:px-12">
-          <ViewTransition>{children}</ViewTransition>
+          {children}
         </main>
       </div>
     </div>

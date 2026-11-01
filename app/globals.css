@@ -542,8 +542,8 @@
   }
 }
 
-/* View Transitions — the admin content pane cross-fades old↔new on route change,
-   via the <ViewTransition> boundary in admin/layout.js (React's native component;
+/* View Transitions — the public site's page content cross-fades old↔new on route change,
+   via the <ViewTransition> boundary in (site)/layout.js (React's native component;
    App Router runs on the canary React that Next bundles). Calm timing, close to
    the Almond project's root cross-fade. Reduced-motion is handled in the guard
    below — the `*` element guard can't reach these document-level pseudo-elements. */
