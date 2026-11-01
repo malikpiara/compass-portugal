@@ -84,10 +84,13 @@ function ChannelLink({
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="flex items-center gap-2 text-ds-xxs font-bold text-primary hover:underline"
+      className="flex items-start gap-2 text-ds-xxs font-bold text-primary hover:underline"
     >
-      {icon}
-      <span className="min-w-0 break-words">{children}</span>
+      {/* One line tall, so the icon sits on the first line when the text wraps. */}
+      <span className="flex h-[1lh] shrink-0 items-center">{icon}</span>
+      {/* overflow-wrap:anywhere breaks a long address or email inside the
+          column instead of running over the next one. */}
+      <span className="min-w-0 [overflow-wrap:anywhere]">{children}</span>
     </a>
   );
 }
@@ -263,7 +266,7 @@ export function ContactsSection({
                       phones, social profiles, websites. Nothing renders for a
                       channel the organisation doesn't have; the <td> stays so
                       the columns line up. */}
-                  <TableCell className="px-3 py-6 align-top">
+                  <TableCell className="px-3 py-6 align-top whitespace-normal">
                     {c.emails.length || c.phones.length || c.socials.length || c.websites.length ? (
                       <div className="space-y-2">
                         {c.emails.map((e) => (
