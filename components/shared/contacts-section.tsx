@@ -28,6 +28,8 @@ import {
 } from "@/components/icons/ds-icons";
 import { Icon } from "@/components/ui/icon";
 import { socialLink, telHref, websiteLink } from "@/lib/contact-channels";
+import { toPlainText } from "@/lib/rich-text";
+import { renderRichText } from "@/components/services/rich-text";
 import {
   Table,
   TableBody,
@@ -141,7 +143,7 @@ export function ContactsSection({
       if (!q) return true;
       return (
         c.organization.toLowerCase().includes(q) ||
-        c.service.toLowerCase().includes(q) ||
+        toPlainText(c.service).toLowerCase().includes(q) ||
         c.emails.some((e) => e.toLowerCase().includes(q)) ||
         c.phones.some((p) => p.number.replace(/\s/g, "").includes(q.replace(/\s/g, ""))) ||
         c.websites.some((w) => w.url.toLowerCase().includes(q))
@@ -259,8 +261,10 @@ export function ContactsSection({
                   <TableCell className="py-6 pl-0 pr-3 align-top text-ds-m font-bold whitespace-normal text-foreground">
                     {c.organization}
                   </TableCell>
+                  {/* The editor's text format: line breaks, "- " bullets,
+                      bold and links (components/services/rich-text.tsx). */}
                   <TableCell className="px-3 py-6 align-top text-ds-xxs font-medium whitespace-normal text-foreground">
-                    {c.service}
+                    <div className="space-y-2 [&_ul]:pl-5 [&_ol]:pl-5">{renderRichText(c.service, `svc-${c.id}`)}</div>
                   </TableCell>
                   {/* One icon link per channel, in the frame's order: emails,
                       phones, social profiles, websites. Nothing renders for a

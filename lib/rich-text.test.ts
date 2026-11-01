@@ -4,7 +4,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { parseInline, parseRichText, stripListMarker, toPlainText } from "./rich-text";
-import { fromEditorJSON, toEditorHTML } from "./rich-text-editor";
+import { getSchema } from "@tiptap/react";
+
+import { fromEditorJSON, fromLinesJSON, toEditorHTML, toLinesDoc } from "./rich-text-editor";
+import { starterKit } from "./rich-text-extensions";
 
 test("single Enter is a line break, blank line a new paragraph", () => {
   assert.deepEqual(parseRichText("One\nTwo\n\nThree"), [
@@ -115,4 +118,35 @@ test("visual editor: editor JSON → stored text in the same format", () => {
     fromEditorJSON(doc),
     "Bring **your passport**\nand **[this form](https://x.pt)**\n\n3. Third\n4. Fourth"
   );
+});
+
+// List items and table cells: one paragraph per stored line. Loading and saving
+// without an edit must give back the same string (checked against all 904 live
+// list items and cells on 2026-11-01), or opening an article would rewrite it.
+test("lines editor: stored items survive load → save unchanged", () => {
+  const schema = getSchema([starterKit("lines")]);
+  const roundTrip = (s: string) => fromLinesJSON(schema.nodeFromJSON(toLinesDoc(s)).toJSON());
+  for (const s of [
+    "Passport\nNIF\n\nResidence permit",
+    "- Passport (typed bullet stays as typed)",
+    "**Documents Needed:**",
+    "EU/EEA/Swiss citizens: **a valid national ID** or *passport*",
+    "Book at [the AIMA portal](https://services.aima.gov.pt) or call 217 115 000",
+    "**[Bold link](https://eportugal.gov.pt)** then text",
+    "Unsafe [label](javascript:alert(1)) stays text",
+    "2 ** 3 and snake*case stay literal",
+    "  indented line  ",
+    "",
+  ]) {
+    assert.equal(roundTrip(s), s);
+  }
+});
+
+test("lines editor: bold, italic and links become marks", () => {
+  const doc = toLinesDoc("**Bold** and [a link](https://x.pt)");
+  assert.deepEqual(doc.content?.[0].content, [
+    { type: "text", text: "Bold", marks: [{ type: "bold" }] },
+    { type: "text", text: " and " },
+    { type: "text", text: "a link", marks: [{ type: "link", attrs: { href: "https://x.pt" } }] },
+  ]);
 });

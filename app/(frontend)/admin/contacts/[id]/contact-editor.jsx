@@ -29,6 +29,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Field, DirtyDot } from "@/components/admin/field";
+import { RichTextField } from "@/components/admin/rich-text-editor";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { Section } from "@/components/admin/editor-ui";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
@@ -229,14 +230,14 @@ export function ContactEditor({ contact, services, audit }) {
               onChange={(v) => set({ organization: v })}
               dirty={fieldDirty(draft.organization, saved.organization)}
             />
-            <Field
+            {/* Visual editor: bold, lists and links, saved as the same text
+                format articles use (lib/rich-text.ts). */}
+            <RichTextField
               className="sm:col-span-2"
               label="Service provided"
               value={draft.service}
               onChange={(v) => set({ service: v })}
               dirty={fieldDirty(draft.service, saved.service)}
-              textarea
-              rows={2}
               hint="What the organization does — the “Service Provided” column. Distinct from the categories below."
             />
           </div>

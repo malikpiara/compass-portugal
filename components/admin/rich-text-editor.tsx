@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import { EditorContent, Extension, useEditor, useEditorState } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { EditorContent, Extension, useEditor, useEditorState, type Editor, type JSONContent } from "@tiptap/react";
 import { Placeholder } from "@tiptap/extensions";
 import { Plugin } from "@tiptap/pm/state";
 // DS lacks list/link editor glyphs — kept on lucide, flagged in docs/DS-ICON-GAPS.md.
@@ -16,7 +15,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { fromEditorJSON, toEditorHTML } from "@/lib/rich-text-editor";
+import { stripListMarker } from "@/lib/rich-text";
+import { fromEditorJSON, fromLinesJSON, toEditorHTML, toLinesDoc } from "@/lib/rich-text-editor";
+import { starterKit, type EditorMode } from "@/lib/rich-text-extensions";
 import { cn } from "@/lib/utils";
 
 // Visual text editor for non-technical editors: bold looks bold, lists look
@@ -69,6 +70,7 @@ function ToolButton({
   shortcut,
   hint,
   active = false,
+  disabled = false,
   onClick,
   children,
 }: {
@@ -77,6 +79,7 @@ function ToolButton({
   /** A plain-language second line, e.g. the typing shortcut for lists. */
   hint?: string;
   active?: boolean;
+  disabled?: boolean;
   onClick: () => void;
   children: ReactNode;
 }) {
@@ -88,12 +91,13 @@ function ToolButton({
             type="button"
             aria-label={label}
             aria-pressed={active}
+            disabled={disabled}
             // Keep the text selection: the click must not move focus first.
             onMouseDown={(e) => e.preventDefault()}
             onClick={onClick}
             className={cn(
               "grid size-9 place-items-center rounded-md transition-colors",
-              "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35",
+              "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35 disabled:pointer-events-none disabled:opacity-40",
               active
                 ? "bg-secondary text-primary"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -199,28 +203,42 @@ function LinkForm({
 // support (bold, italic, lists, links) and drops fonts, colours and sizes.
 const LOOKS_FORMATTED = /\*\*\S|^\s*[-•*]\s+\S|^\s*\d{1,3}[.)]\s+\S|\[[^\]]+\]\([^)\s]+\)/m;
 
-const FormattedTextPaste = Extension.create({
-  name: "formattedTextPaste",
-  addProseMirrorPlugins() {
-    const editor = this.editor;
-    return [
-      new Plugin({
-        props: {
-          handlePaste: (_view, event) => {
-            const data = event.clipboardData;
-            if (!data || data.getData("text/html")) return false;
-            const text = data.getData("text/plain");
-            if (!text || !LOOKS_FORMATTED.test(text)) return false;
-            editor.commands.insertContent(toEditorHTML(text));
-            return true;
+function formattedTextPaste(mode: EditorMode) {
+  return Extension.create({
+    name: "formattedTextPaste",
+    addProseMirrorPlugins() {
+      const editor = this.editor;
+      return [
+        new Plugin({
+          props: {
+            handlePaste: (_view, event) => {
+              const data = event.clipboardData;
+              if (!data || data.getData("text/html")) return false;
+              const text = data.getData("text/plain");
+              if (!text || !LOOKS_FORMATTED.test(text)) return false;
+              if (mode === "lines") {
+                // A pasted bulleted list: every line is an item already, so
+                // its "- " or "1." goes.
+                const lines = text
+                  .replace(/\r\n?/g, "\n")
+                  .split("\n")
+                  .map(stripListMarker)
+                  .filter((l) => l.trim())
+                  .join("\n");
+                editor.commands.insertContent((toLinesDoc(lines).content ?? []) as JSONContent[]);
+              } else {
+                editor.commands.insertContent(toEditorHTML(text));
+              }
+              return true;
+            },
           },
-        },
-      }),
-    ];
-  },
-});
+        }),
+      ];
+    },
+  });
+}
 
-// ⌘K / Ctrl+K: ask the React side to open the link form (an event on the
+// ⌘K / Ctrl+K: ask the toolbar to open the link form (an event on the
 // editor's DOM node, so the extension needs no React state).
 const LINK_EVENT = "rte:open-link";
 const LinkShortcut = Extension.create({
@@ -235,94 +253,115 @@ const LinkShortcut = Extension.create({
   },
 });
 
-export function RichTextEditor({
+const load = (mode: EditorMode, value: string) =>
+  mode === "lines" ? (toLinesDoc(value) as JSONContent) : toEditorHTML(value);
+const save = (mode: EditorMode, json: JSONContent) =>
+  mode === "lines" ? fromLinesJSON(json as Parameters<typeof fromLinesJSON>[0]) : fromEditorJSON(json as Parameters<typeof fromEditorJSON>[0]);
+
+const linkAndPlaceholderClass = cn(
+  "[&_a]:font-bold [&_a]:text-primary [&_a]:underline",
+  "[&_.is-editor-empty:first-child]:before:pointer-events-none [&_.is-editor-empty:first-child]:before:float-left [&_.is-editor-empty:first-child]:before:h-0 [&_.is-editor-empty:first-child]:before:text-muted-foreground [&_.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]"
+);
+
+// One editor instance, kept in sync with the stored string `value`.
+function useTextEditor({
   value,
   onChange,
-  placeholder = "Start writing…",
-  ariaLabel,
-  className,
+  mode,
+  placeholder,
+  attributes,
+  onFocus,
 }: {
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
-  ariaLabel?: string;
-  className?: string;
+  mode: EditorMode;
+  placeholder: string;
+  attributes: Record<string, string>;
+  onFocus?: (editor: Editor) => void;
 }) {
-  const mod = useModKey();
-  const [linkForm, setLinkForm] = useState<null | { initial: string }>(null);
   // What we last emitted — to tell our own updates from outside changes
   // (Discard, switching items) that must reload the editor.
   const emitted = useRef(value);
+  // The editor binds its handlers once; read the latest props through refs.
+  const onChangeRef = useRef(onChange);
+  const onFocusRef = useRef(onFocus);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+    onFocusRef.current = onFocus;
+  });
+  const [extensions] = useState(() => [
+    starterKit(mode),
+    Placeholder.configure({ placeholder }),
+    formattedTextPaste(mode),
+    LinkShortcut,
+  ]);
 
   const editor = useEditor({
     // Next renders on the server first; mount the editor on the client.
     immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        heading: false,
-        blockquote: false,
-        code: false,
-        codeBlock: false,
-        horizontalRule: false,
-        strike: false,
-        underline: false,
-        link: {
-          openOnClick: false,
-          autolink: true,
-          defaultProtocol: "https",
-          protocols: ["mailto", "tel"],
-        },
-      }),
-      Placeholder.configure({ placeholder }),
-      FormattedTextPaste,
-      LinkShortcut,
-    ],
-    content: toEditorHTML(value),
-    editorProps: {
-      attributes: {
-        ...(ariaLabel ? { "aria-label": ariaLabel } : {}),
-        class: cn(
-          "min-h-36 px-4 py-3 text-ds-xs font-medium leading-relaxed text-foreground outline-none",
-          "[&_p+p]:mt-3 [&_ul]:my-3 [&_ol]:my-3 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_li+li]:mt-1",
-          "[&_ol]:marker:font-bold [&_ol]:marker:text-primary",
-          "[&_a]:font-bold [&_a]:text-primary [&_a]:underline",
-          "[&_.is-editor-empty:first-child]:before:pointer-events-none [&_.is-editor-empty:first-child]:before:float-left [&_.is-editor-empty:first-child]:before:h-0 [&_.is-editor-empty:first-child]:before:text-muted-foreground [&_.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]"
-        ),
-      },
-    },
+    extensions,
+    content: load(mode, value),
+    editorProps: { attributes },
     onUpdate: ({ editor: e }) => {
-      const next = fromEditorJSON(e.getJSON());
+      const next = save(mode, e.getJSON());
       emitted.current = next;
-      onChange(next);
+      onChangeRef.current(next);
     },
+    onFocus: ({ editor: e }) => onFocusRef.current?.(e),
   });
-  // Reads the editor at call time, so it never acts on stale React state.
-  const openLink = () => {
-    if (!editor) return;
-    const href = editor.isActive("link") ? (editor.getAttributes("link").href as string) : "";
-    setLinkForm({ initial: href ? prettyHref(href) : "" });
-  };
-
-  useEffect(() => {
-    if (!editor) return;
-    const dom = editor.view.dom;
-    const onOpen = () => {
-      const href = editor.isActive("link") ? (editor.getAttributes("link").href as string) : "";
-      setLinkForm({ initial: href ? prettyHref(href) : "" });
-    };
-    dom.addEventListener(LINK_EVENT, onOpen);
-    return () => dom.removeEventListener(LINK_EVENT, onOpen);
-  }, [editor]);
 
   // Outside change (e.g. Discard) → reload without echoing an update.
   useEffect(() => {
     if (!editor || value === emitted.current) return;
     emitted.current = value;
-    editor.commands.setContent(toEditorHTML(value), { emitUpdate: false });
-  }, [editor, value]);
+    editor.commands.setContent(load(mode, value), { emitUpdate: false });
+  }, [editor, value, mode]);
+
+  return editor;
+}
+
+/**
+ * Bold, Italic, (lists,) Link for one editor, with the link form and the
+ * "Links to …" bar under it. The table passes whichever cell was last in
+ * focus, so one bar serves every cell; with no editor the buttons rest
+ * disabled. `children` lands at the end of the toolbar row.
+ */
+export function FormattingBar({
+  editor,
+  lists = false,
+  children,
+}: {
+  editor: Editor | null;
+  lists?: boolean;
+  children?: ReactNode;
+}) {
+  const mod = useModKey();
+  const live = editor && !editor.isDestroyed ? editor : null;
+  // The form belongs to the editor it was opened for; focusing another cell
+  // hides it rather than applying a link there.
+  const [linkForm, setLinkForm] = useState<null | { initial: string; editor: Editor }>(null);
+  const formOpen = linkForm && linkForm.editor === live ? linkForm : null;
+
+  const currentHref = (e: Editor) => (e.isActive("link") ? (e.getAttributes("link").href as string) : "");
+  const openLink = () => {
+    if (!live) return;
+    const href = currentHref(live);
+    setLinkForm({ initial: href ? prettyHref(href) : "", editor: live });
+  };
+
+  useEffect(() => {
+    if (!live) return;
+    const dom = live.view.dom;
+    const onOpen = () => {
+      const href = currentHref(live);
+      setLinkForm({ initial: href ? prettyHref(href) : "", editor: live });
+    };
+    dom.addEventListener(LINK_EVENT, onOpen);
+    return () => dom.removeEventListener(LINK_EVENT, onOpen);
+  }, [live]);
 
   const state = useEditorState({
-    editor,
+    editor: live,
     selector: ({ editor: e }) =>
       e
         ? {
@@ -337,10 +376,10 @@ export function RichTextEditor({
   });
 
   const applyLink = (href: string) => {
-    if (!editor) return;
+    if (!live) return;
     setLinkForm(null);
-    const chain = editor.chain().focus().extendMarkRange("link");
-    if (editor.state.selection.empty && !editor.isActive("link")) {
+    const chain = live.chain().focus().extendMarkRange("link");
+    if (live.state.selection.empty && !live.isActive("link")) {
       chain
         .insertContent({ type: "text", text: prettyHref(href), marks: [{ type: "link", attrs: { href } }] })
         .insertContent(" ")
@@ -351,45 +390,45 @@ export function RichTextEditor({
   };
 
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-lg border-2 border-input bg-card transition-colors hover:border-muted-foreground focus-within:border-ring focus-within:hover:border-ring",
-        className
-      )}
-    >
+    <>
       <TooltipProvider delay={300}>
         <div
           role="toolbar"
           aria-label="Text formatting"
           className="flex flex-wrap items-center gap-0.5 border-b-2 border-border px-1.5 py-1.5"
         >
-          <ToolButton label="Bold" shortcut={`${mod} B`} active={state?.bold} onClick={() => editor?.chain().focus().toggleBold().run()}>
+          <ToolButton label="Bold" shortcut={`${mod} B`} active={state?.bold} disabled={!live} onClick={() => live?.chain().focus().toggleBold().run()}>
             <span className="font-heading text-ds-s font-bold">B</span>
           </ToolButton>
-          <ToolButton label="Italic" shortcut={`${mod} I`} active={state?.italic} onClick={() => editor?.chain().focus().toggleItalic().run()}>
+          <ToolButton label="Italic" shortcut={`${mod} I`} active={state?.italic} disabled={!live} onClick={() => live?.chain().focus().toggleItalic().run()}>
             <span className="font-serif text-ds-s italic">I</span>
           </ToolButton>
+          {lists ? (
+            <>
+              <Divider />
+              <ToolButton label="Bulleted list" hint="Or type - and a space at the start of a line" active={state?.bullet} disabled={!live} onClick={() => live?.chain().focus().toggleBulletList().run()}>
+                <List className="size-4" strokeWidth={2.25} />
+              </ToolButton>
+              <ToolButton label="Numbered list" hint="Or type 1. and a space at the start of a line" active={state?.ordered} disabled={!live} onClick={() => live?.chain().focus().toggleOrderedList().run()}>
+                <ListOrdered className="size-4" strokeWidth={2.25} />
+              </ToolButton>
+            </>
+          ) : null}
           <Divider />
-          <ToolButton label="Bulleted list" hint="Or type - and a space at the start of a line" active={state?.bullet} onClick={() => editor?.chain().focus().toggleBulletList().run()}>
-            <List className="size-4" strokeWidth={2.25} />
-          </ToolButton>
-          <ToolButton label="Numbered list" hint="Or type 1. and a space at the start of a line" active={state?.ordered} onClick={() => editor?.chain().focus().toggleOrderedList().run()}>
-            <ListOrdered className="size-4" strokeWidth={2.25} />
-          </ToolButton>
-          <Divider />
-          <ToolButton label={state?.link ? "Edit link" : "Add link"} shortcut={`${mod} K`} hint={state?.link ? undefined : "Select some words first to turn them into a link"} active={state?.link || !!linkForm} onClick={() => openLink()}>
+          <ToolButton label={state?.link ? "Edit link" : "Add link"} shortcut={`${mod} K`} hint={state?.link ? undefined : "Select some words first to turn them into a link"} active={state?.link || !!formOpen} disabled={!live} onClick={() => openLink()}>
             <Link2 className="size-4" strokeWidth={2.25} />
           </ToolButton>
+          {children}
         </div>
       </TooltipProvider>
 
-      {linkForm ? (
+      {formOpen ? (
         <LinkForm
-          initial={linkForm.initial}
+          initial={formOpen.initial}
           onApply={applyLink}
           onCancel={() => {
             setLinkForm(null);
-            editor?.commands.focus();
+            live?.commands.focus();
           }}
         />
       ) : state?.link ? (
@@ -407,7 +446,7 @@ export function RichTextEditor({
             </button>
             <button
               type="button"
-              onClick={() => editor?.chain().focus().extendMarkRange("link").unsetLink().run()}
+              onClick={() => live?.chain().focus().extendMarkRange("link").unsetLink().run()}
               className="inline-flex items-center gap-1 rounded px-2 py-1 font-bold text-muted-foreground hover:bg-card hover:text-destructive"
             >
               <Unlink className="size-3.5" strokeWidth={2.25} />
@@ -416,15 +455,134 @@ export function RichTextEditor({
           </span>
         </div>
       ) : null}
+    </>
+  );
+}
 
-      {editor ? <EditorContent editor={editor} /> : <div className="min-h-36" />}
+const Key = ({ children }: { children: ReactNode }) => (
+  <kbd className="font-sans font-bold text-foreground">{children}</kbd>
+);
 
+/**
+ * The editor with its own toolbar.
+ *   mode "rich"  — article text, FAQ answers, intros (paragraphs and lists).
+ *   mode "lines" — a list block's items: one line per item, drawn with the
+ *                  block's bullet or number (`marker`) so it reads as the list.
+ */
+export function RichTextEditor({
+  value,
+  onChange,
+  placeholder = "Start writing…",
+  ariaLabel,
+  className,
+  mode = "rich",
+  marker = "disc",
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  ariaLabel?: string;
+  className?: string;
+  mode?: EditorMode;
+  marker?: "disc" | "decimal";
+}) {
+  const editor = useTextEditor({
+    value,
+    onChange,
+    mode,
+    placeholder,
+    attributes: {
+      ...(ariaLabel ? { "aria-label": ariaLabel } : {}),
+      class: cn(
+        "px-4 py-3 text-ds-xs font-medium leading-relaxed text-foreground outline-none",
+        linkAndPlaceholderClass,
+        mode === "rich"
+          ? cn(
+              "min-h-36 [&_p+p]:mt-3 [&_ul]:my-3 [&_ol]:my-3 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_li+li]:mt-1",
+              "[&_ol]:marker:font-bold [&_ol]:marker:text-primary"
+            )
+          : cn(
+              "min-h-24 [counter-reset:list-item] [&_p]:ml-5 [&_p]:list-item [&_p+p]:mt-1",
+              marker === "decimal"
+                ? "[&_p]:list-decimal [&_p]:marker:font-bold [&_p]:marker:text-primary"
+                : "[&_p]:list-disc"
+            )
+      ),
+    },
+  });
+
+  return (
+    <div
+      className={cn(
+        "overflow-hidden rounded-lg border-2 border-input bg-card transition-colors hover:border-muted-foreground focus-within:border-ring focus-within:hover:border-ring",
+        className
+      )}
+    >
+      <FormattingBar editor={editor} lists={mode === "rich"} />
+      {editor ? (
+        <EditorContent editor={editor} />
+      ) : (
+        <div className={mode === "rich" ? "min-h-36" : "min-h-24"} />
+      )}
       <p className="border-t-2 border-border px-4 py-2 text-ds-xxs font-medium text-muted-foreground">
-        <kbd className="font-sans font-bold text-foreground">Enter</kbd> new paragraph ·{" "}
-        <kbd className="font-sans font-bold text-foreground">Shift + Enter</kbd> new line
+        {mode === "rich" ? (
+          <>
+            <Key>Enter</Key> new paragraph · <Key>Shift + Enter</Key> new line
+          </>
+        ) : (
+          <>
+            <Key>Enter</Key> new item
+          </>
+        )}
       </p>
     </div>
   );
+}
+
+/**
+ * A table cell: the "lines" editor with no toolbar of its own (the table has
+ * one FormattingBar for all its cells; `onFocusEditor` tells it which cell is
+ * active). Each line is one fact in the cell; several become bullets on the
+ * site. `row`/`col` land on the editable element as data-row / data-col.
+ */
+export function CellTextEditor({
+  value,
+  onChange,
+  ariaLabel,
+  placeholder = "",
+  className,
+  row,
+  col,
+  onFocusEditor,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  ariaLabel: string;
+  placeholder?: string;
+  className?: string;
+  row: number;
+  col: number;
+  onFocusEditor?: (editor: Editor) => void;
+}) {
+  const cls = cn(
+    "w-full rounded-lg border-2 border-input bg-card text-[var(--text-secondary)] outline-none transition-colors hover:border-muted-foreground focus:border-ring",
+    "[&_p+p]:mt-1",
+    className
+  );
+  const editor = useTextEditor({
+    value,
+    onChange,
+    mode: "lines",
+    placeholder,
+    onFocus: onFocusEditor,
+    attributes: {
+      "aria-label": ariaLabel,
+      "data-row": String(row),
+      "data-col": String(col),
+      class: cn(cls, linkAndPlaceholderClass),
+    },
+  });
+  return editor ? <EditorContent editor={editor} /> : <div aria-hidden className={cls} />;
 }
 
 // ---- Labelled field (admin forms) -------------------------------------------

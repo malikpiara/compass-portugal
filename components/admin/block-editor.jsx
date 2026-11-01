@@ -1,12 +1,15 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-// DS lacks link + trash glyphs — interim lucide icons, flagged for Rafael.
-import { Link2, Trash2 } from "lucide-react";
+// DS lacks a trash glyph — interim lucide icon, flagged for Rafael.
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import {
+  CellTextEditor,
+  FormattingBar,
+  RichTextEditor,
+} from "@/components/admin/rich-text-editor";
 import {
   Tooltip,
   TooltipContent,
@@ -37,36 +40,6 @@ const splitL = (s) =>
     .split("\n")
     .map((t) => t.trim())
     .filter(Boolean);
-
-// Validate + normalise a web address for the "Add link" tool. Accepts full
-// http(s) URLs, mailto:/tel:, internal /paths, and bare domains (auto-prefixed
-// with https://). Rejects a bare word (e.g. "test") or an unsafe scheme.
-export function normUrl(v) {
-  v = (v || "").trim();
-  if (!v) return null;
-  if (v[0] === "/") return v;
-  if (/^(mailto:|tel:)/i.test(v)) return v;
-  // An email address becomes a mailto:, never a website. Without this it slips
-  // through to the bare-domain branch below and turns jrs@jrsportugal.pt into
-  // https://jrs@jrsportugal.pt (a website link with userinfo).
-  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return `mailto:${v}`;
-  try {
-    const u = new URL(v);
-    if (/^https?:$/i.test(u.protocol)) return v;
-    return null;
-  } catch {
-    /* not a full URL — try as a bare domain below */
-  }
-  if (/^[^\s.]+\.[^\s]{2,}/.test(v)) {
-    try {
-      const u = new URL("https://" + v);
-      if (u.hostname.includes(".")) return "https://" + v;
-    } catch {
-      /* still invalid */
-    }
-  }
-  return null;
-}
 
 // A provisional table glyph — the DS has no table icon yet (Rafael to add one),
 // so this is deliberately outlined (lighter) than the filled DS icons.
@@ -213,107 +186,6 @@ function IconBtn({ label, onClick, disabled, danger, children }) {
   );
 }
 
-// Textarea with a friendly "Add link" helper: highlight text, click Add link,
-// the selection pre-fills "Text to show", and inserting replaces it with a link.
-// No markdown syntax is ever shown to the editor; the address is validated.
-function LinkableField({ value, onChange, rows = 3, placeholder, hint }) {
-  const wrapRef = useRef(null);
-  const [open, setOpen] = useState(false);
-  const [sel, setSel] = useState({ start: 0, end: 0 });
-  const [text, setText] = useState("");
-  const [url, setUrl] = useState("");
-  const [err, setErr] = useState("");
-
-  const ta = () => wrapRef.current?.querySelector("textarea");
-  const openForm = () => {
-    const el = ta();
-    const v = value || "";
-    const start = el ? el.selectionStart ?? v.length : v.length;
-    const end = el ? el.selectionEnd ?? start : start;
-    setSel({ start, end });
-    setText(v.slice(start, end));
-    setUrl("");
-    setErr("");
-    setOpen(true);
-  };
-  const insert = () => {
-    const u = normUrl(url);
-    if (!u) {
-      setErr("Enter a valid web address, e.g. https://eportugal.gov.pt");
-      return;
-    }
-    const snippet = text.trim() ? `[${text.trim()}](${u})` : u;
-    const v = value || "";
-    const s = Math.min(sel.start, v.length);
-    const e = Math.min(sel.end, v.length);
-    onChange(v.slice(0, s) + snippet + v.slice(e));
-    setOpen(false);
-    setText("");
-    setUrl("");
-    setErr("");
-  };
-
-  return (
-    <div ref={wrapRef}>
-      <Textarea
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        rows={rows}
-        placeholder={placeholder}
-      />
-      {hint ? (
-        <p className="mt-1 text-ds-xxs font-medium text-muted-foreground">{hint}</p>
-      ) : null}
-      <div className="mt-2">
-        <button
-          type="button"
-          onClick={openForm}
-          className="inline-flex items-center gap-1.5 text-ds-xxs font-bold text-muted-foreground transition-colors hover:text-primary"
-        >
-          <Link2 className="size-3.5" strokeWidth={2} />
-          Add link
-        </button>
-      </div>
-      {open ? (
-        <div className="mt-2 rounded-lg border-2 border-border bg-muted/40 p-3">
-          <label className="mb-1 block text-ds-xxs font-bold text-foreground">
-            Text to show
-          </label>
-          <Input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="e.g. the appointment form"
-          />
-          <label className="mb-1 mt-2 block text-ds-xxs font-bold text-foreground">
-            Web address
-          </label>
-          <Input
-            type="url"
-            inputMode="url"
-            value={url}
-            onChange={(e) => {
-              setUrl(e.target.value);
-              setErr("");
-            }}
-            placeholder="https://eportugal.gov.pt"
-          />
-          {err ? (
-            <p className="mt-1 text-ds-xxs font-bold text-destructive">{err}</p>
-          ) : null}
-          <div className="mt-2 flex gap-2">
-            <Button size="sm" onClick={insert}>
-              Insert link
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 const inputLabel = "mb-1.5 block text-ds-xs font-medium text-foreground";
 
 function BlockFields({ block, onPatch }) {
@@ -353,12 +225,15 @@ function BlockFields({ block, onPatch }) {
             </button>
           ))}
         </div>
-        <LinkableField
+        {/* One line per item, drawn with the block's bullet or number;
+            bold, italic and links inside an item. */}
+        <RichTextEditor
+          mode="lines"
+          marker={block.ordered ? "decimal" : "disc"}
           value={block.items}
           onChange={(v) => onPatch({ items: v })}
-          rows={4}
           placeholder="One item per line"
-          hint="One item per line."
+          ariaLabel="List items"
         />
       </div>
     );
@@ -410,6 +285,8 @@ function TableFields({ block, onPatch }) {
   // never during render.
   const pendingFocus = useRef(null);
   const [armedCol, setArmedCol] = useState(null);
+  // The cell editor last in focus: the table's one formatting bar acts on it.
+  const [activeCell, setActiveCell] = useState(null);
 
   const setHeader = (i, v) =>
     onPatch({ headers: headers.map((h, idx) => (idx === i ? v : h)) });
@@ -420,14 +297,14 @@ function TableFields({ block, onPatch }) {
       ),
     });
   const addRow = () => {
-    pendingFocus.current = `textarea[data-row="${rows.length}"][data-col="0"]`;
+    pendingFocus.current = `[data-row="${rows.length}"][data-col="0"]`;
     onPatch({ rows: [...rows, { _k: nextBlockKey(), cells: headers.map(() => "") }] });
   };
   const removeRow = (k) => {
     // Land on the row now at this position; with none left, on "Add row".
     pendingFocus.current =
       rows.length > 1
-        ? `textarea[data-row="${Math.min(k, rows.length - 2)}"][data-col="0"]`
+        ? `[data-row="${Math.min(k, rows.length - 2)}"][data-col="0"]`
         : `[data-table-add-row]`;
     onPatch({ rows: rows.filter((_, idx) => idx !== k) });
   };
@@ -466,7 +343,16 @@ function TableFields({ block, onPatch }) {
     const selector = pendingFocus.current;
     if (!selector) return;
     pendingFocus.current = null;
-    gridRef.current?.closest("[data-table-fields]")?.querySelector(selector)?.focus();
+    // A new row's cell editors mount a frame or two after the row renders.
+    let tries = 0;
+    let raf = 0;
+    const focus = () => {
+      const el = gridRef.current?.closest("[data-table-fields]")?.querySelector(selector);
+      if (el) el.focus();
+      else if (tries++ < 10) raf = requestAnimationFrame(focus);
+    };
+    focus();
+    return () => cancelAnimationFrame(raf);
   }, [n, rows.length]);
 
   // A keyboard user who arms a removal should land on the safe choice, and
@@ -505,6 +391,18 @@ function TableFields({ block, onPatch }) {
           placeholder="Documents Required"
         />
       </label>
+
+      {/* One formatting bar for the whole table, acting on the cell you are
+          in, instead of a toolbar per cell. */}
+      <div className="overflow-hidden rounded-lg border-2 border-border [&>*:last-child]:border-b-0">
+        <FormattingBar editor={activeCell}>
+          <span className="ml-2 text-ds-xxs font-medium text-muted-foreground">
+            {activeCell && !activeCell.isDestroyed
+              ? "Formats the cell you’re in"
+              : "Click into a cell to make words bold or add a link"}
+          </span>
+        </FormattingBar>
+      </div>
 
       <div className="overflow-x-auto">
         <div ref={gridRef} className="grid min-w-[520px] items-start gap-2" style={gridCols}>
@@ -563,15 +461,15 @@ function TableFields({ block, onPatch }) {
           {rows.map((r, k) => (
             <Fragment key={r._k}>
               {headers.map((_, i) => (
-                <Textarea
+                <CellTextEditor
                   key={i}
-                  rows={1}
-                  data-row={k}
-                  data-col={i}
+                  row={k}
+                  col={i}
                   value={r.cells[i] ?? ""}
-                  onChange={(e) => setCell(k, i, e.target.value)}
-                  aria-label={`Row ${k + 1}, column ${i + 1}`}
-                  placeholder={k === 0 ? (i === 0 ? "Proof of identity" : "One item per line") : undefined}
+                  onChange={(v) => setCell(k, i, v)}
+                  onFocusEditor={setActiveCell}
+                  ariaLabel={`Row ${k + 1}, column ${i + 1}`}
+                  placeholder={k === 0 ? (i === 0 ? "Proof of identity" : "One item per line") : ""}
                   className={cn(cellClass, i === 0 && "font-bold")}
                 />
               ))}
@@ -621,118 +519,12 @@ function TableFields({ block, onPatch }) {
           <IconPlus className="size-3.5" />
           Add column
         </Button>
-        <TableLinkTool gridRef={gridRef} onInsert={setCell} />
         {n > TABLE_MIN_COLUMNS ? (
           <span className="ml-auto text-ds-xxs font-medium text-muted-foreground">
             {n} of {TABLE_MAX_COLUMNS} columns
           </span>
         ) : null}
       </div>
-    </div>
-  );
-}
-
-// "Add link" for table cells: acts on the cell the editor last clicked into
-// (tracked with a focusin listener on the grid), so one tool serves every
-// cell instead of a form under each textarea. Same validation and the same
-// no-markdown promise as LinkableField.
-function TableLinkTool({ gridRef, onInsert }) {
-  const lastCell = useRef(null);
-  const [open, setOpen] = useState(false);
-  const [sel, setSel] = useState({ start: 0, end: 0 });
-  const [text, setText] = useState("");
-  const [url, setUrl] = useState("");
-  const [err, setErr] = useState("");
-
-  useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return;
-    const onFocus = (e) => {
-      const el = e.target;
-      if (el?.tagName === "TEXTAREA" && el.dataset.row != null) lastCell.current = el;
-    };
-    grid.addEventListener("focusin", onFocus);
-    return () => grid.removeEventListener("focusin", onFocus);
-  }, [gridRef]);
-
-  const openForm = () => {
-    const el = lastCell.current;
-    if (!el || !el.isConnected) {
-      setErr("Click into a cell first, then add the link.");
-      setOpen(true);
-      return;
-    }
-    const v = el.value || "";
-    const start = el.selectionStart ?? v.length;
-    const end = el.selectionEnd ?? start;
-    setSel({ start, end });
-    setText(v.slice(start, end));
-    setUrl("");
-    setErr("");
-    setOpen(true);
-  };
-  const insert = () => {
-    const el = lastCell.current;
-    if (!el || !el.isConnected) {
-      setErr("Click into a cell first, then add the link.");
-      return;
-    }
-    const u = normUrl(url);
-    if (!u) {
-      setErr("Enter a valid web address, e.g. https://eportugal.gov.pt");
-      return;
-    }
-    const snippet = text.trim() ? `[${text.trim()}](${u})` : u;
-    const v = el.value || "";
-    const s = Math.min(sel.start, v.length);
-    const e = Math.min(sel.end, v.length);
-    onInsert(Number(el.dataset.row), Number(el.dataset.col), v.slice(0, s) + snippet + v.slice(e));
-    setOpen(false);
-    setText("");
-    setUrl("");
-    setErr("");
-  };
-
-  return (
-    <div className="contents">
-      <button
-        type="button"
-        onClick={openForm}
-        className="inline-flex items-center gap-1.5 px-1 text-ds-xxs font-bold text-muted-foreground transition-colors hover:text-primary"
-      >
-        <Link2 className="size-3.5" strokeWidth={2} />
-        Add link
-      </button>
-      {open ? (
-        <div className="basis-full rounded-lg border-2 border-border bg-muted/40 p-3">
-          <label className="mb-1 block text-ds-xxs font-bold text-foreground">Text to show</label>
-          <Input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="e.g. the appointment form"
-          />
-          <label className="mb-1 mt-2 block text-ds-xxs font-bold text-foreground">Web address</label>
-          <Input
-            type="url"
-            inputMode="url"
-            value={url}
-            onChange={(e) => {
-              setUrl(e.target.value);
-              setErr("");
-            }}
-            placeholder="https://eportugal.gov.pt"
-          />
-          {err ? <p className="mt-1 text-ds-xxs font-bold text-destructive">{err}</p> : null}
-          <div className="mt-2 flex gap-2">
-            <Button size="sm" onClick={insert}>
-              Insert link
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -789,7 +581,14 @@ export function SectionBlocks({ blocks, onChange }) {
     if (node) {
       requestAnimationFrame(() => {
         node.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        node.querySelector("textarea, input")?.focus({ preventScroll: true });
+        // Visual editors mount a frame or two after the block renders.
+        let tries = 0;
+        const focus = () => {
+          const field = node.querySelector('input, textarea, [contenteditable="true"]');
+          if (field) field.focus({ preventScroll: true });
+          else if (tries++ < 10) requestAnimationFrame(focus);
+        };
+        focus();
       });
     }
     const t = setTimeout(

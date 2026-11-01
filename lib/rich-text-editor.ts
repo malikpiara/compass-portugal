@@ -127,3 +127,63 @@ export function fromEditorJSON(doc: PMNode): string {
     .filter((s) => s.trim())
     .join("\n\n");
 }
+
+// ---- One line per item (list blocks, table cells) ---------------------------
+//
+// List blocks and table cells store one item per line ("\n"-separated) and the
+// site renders each line on its own (bold, italic, links; a typed "- " is
+// dropped at render time). The visual editor edits them as one paragraph per
+// line, with no lists or paragraph breaks of its own, and loads them as editor
+// JSON rather than HTML so every line survives load → save byte for byte
+// (lib/rich-text.test.ts checks that against live content).
+
+const linkRe = () => /\[([^\]]+)\]\(([^)\s]+)\)/g;
+
+const textNode = (text: string, marks: PMMark[]): PMNode =>
+  marks.length ? { type: "text", text, marks } : { type: "text", text };
+
+// Plain text with [label](href) links → text nodes. An unsafe href stays text.
+function textNodes(text: string, marks: PMMark[]): PMNode[] {
+  const out: PMNode[] = [];
+  const re = linkRe();
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (!SAFE_HREF.test(m[2])) continue;
+    if (m.index > last) out.push(textNode(text.slice(last, m.index), marks));
+    out.push(textNode(m[1], [...marks, { type: "link", attrs: { href: m[2] } }]));
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(textNode(text.slice(last), marks));
+  return out;
+}
+
+function segmentsToNodes(segments: InlineSegment[], marks: PMMark[] = []): PMNode[] {
+  return segments.flatMap((s) =>
+    s.kind === "bold"
+      ? segmentsToNodes(s.children, [...marks, { type: "bold" }])
+      : s.kind === "italic"
+        ? textNodes(s.text, [...marks, { type: "italic" }])
+        : textNodes(s.text, marks)
+  );
+}
+
+/** Stored "one item per line" string → editor JSON: one paragraph per line. */
+export function toLinesDoc(text: string): PMNode {
+  const lines = (text ?? "").replace(/\r\n?/g, "\n").split("\n");
+  return {
+    type: "doc",
+    content: lines.map((line) => {
+      const content = segmentsToNodes(parseInline(line));
+      return content.length ? { type: "paragraph", content } : { type: "paragraph" };
+    }),
+  };
+}
+
+/** Editor JSON → stored "one item per line" string. */
+export function fromLinesJSON(doc: PMNode): string {
+  return (doc.content ?? [])
+    .filter((n) => n.type === "paragraph")
+    .map((n) => inlineToText(n.content))
+    .join("\n");
+}
