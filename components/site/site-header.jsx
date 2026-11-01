@@ -16,20 +16,19 @@ export function SiteHeader({ sticky = true } = {}) {
       <div className="mx-auto flex min-h-[72px] max-w-[1680px] items-center justify-between px-4 py-4 sm:px-6 lg:px-14">
         {/* The Compass Portugal lockup, exported from the DS brand component
             (Figma 3112:9963, orientation=compassPortugal) as one SVG with the
-            type outlined, so the letterforms and spacing are the designer's.
-            Figma draws it at 378×98 (Home frame 3393:7186); on the site that
-            read far too big (Malik, 2026-11-01), so it is 56px tall from lg
-            up (about 216 wide, "by lisbon project" still legible) and steps
-            down to fit beside Menu and Donate on smaller screens. */}
+            type outlined. Its viewBox is trimmed to the artwork (the export
+            carried ~16px of empty space around it), and it is drawn at the
+            old Admin Hub logo's size: artwork 40px tall, flush at the gutter.
+            Figma's 378×98 read far too big on the site (Malik, 2026-11-01). */}
         <Link href="/" className="inline-flex shrink-0">
           <Image
             src="/compass-portugal-logo.svg"
             alt="Compass Portugal, by Lisbon Project"
-            width={378}
-            height={98}
+            width={349}
+            height={66}
             priority
             unoptimized
-            className="h-10 w-auto sm:h-12 lg:h-14"
+            className="h-10 w-auto"
           />
         </Link>
 
