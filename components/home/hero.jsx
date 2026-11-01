@@ -3,15 +3,18 @@ import { QuickAccess } from "@/components/home/quick-access";
 import { SITE_TEXT_DEFAULTS } from "@/lib/site-text-defaults";
 
 function HeroIllustration() {
-  // Faint DS hero decoration (document + search), exported from Figma.
+  // Faint DS compass behind the hero ("icon-background", Figma Home frame
+  // 3393:7186), exported as is: 800×800, 24px from the section's top and
+  // 40.65px past its right edge, so the section clips its right side and its
+  // bottom runs behind the Quick Access cards.
   return (
     <Image
-      src="/illustrations/hero-home.svg"
+      src="/illustrations/hero-compass.svg"
       alt=""
       aria-hidden="true"
       width={800}
       height={800}
-      className="pointer-events-none absolute right-4 top-6 -z-10 hidden w-[min(46vw,800px)] max-w-[800px] 2xl:block"
+      className="pointer-events-none absolute -right-[40.65px] top-6 -z-10 hidden w-[800px] max-w-none 2xl:block"
     />
   );
 }
@@ -30,27 +33,17 @@ export function Hero({
         <div className="ds-section-padding relative isolate flex flex-col gap-12 overflow-hidden rounded-none xl:rounded-[3.5rem]">
           <HeroIllustration />
           <div className="max-w-[760px]">
-            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-              <div
-                aria-hidden
-                className="grid size-28 shrink-0 place-items-center rounded-[2rem] bg-primary/[0.08]"
-              >
-                <Image
-                  src="/illustrations/hero-home-icon.svg"
-                  alt=""
-                  width={80}
-                  height={80}
-                  className="size-20"
-                />
-              </div>
-              <h1 className="font-heading text-ds-xxxxl font-bold text-primary">
-                {title}
-              </h1>
-            </div>
-            <p className="mt-8 max-w-2xl text-ds-l font-bold text-foreground">
+            {/* The icon tile beside the title is hidden in the Compass
+                Portugal frame; the title stands alone. */}
+            <h1 className="font-heading text-ds-xxxxl font-bold text-primary">
+              {title}
+            </h1>
+            {/* Figma: 24px title → lead, 16px lead → description, both across
+                the full 760px text column. */}
+            <p className="mt-6 text-ds-l font-bold text-foreground">
               {lead}
             </p>
-            <p className="mt-4 max-w-2xl text-ds-s font-medium text-foreground">
+            <p className="mt-4 text-ds-s font-medium text-foreground">
               {description}
             </p>
           </div>

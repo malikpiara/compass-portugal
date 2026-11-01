@@ -14,21 +14,20 @@ export function SiteHeader({ sticky = true } = {}) {
       )}
     >
       <div className="mx-auto flex min-h-[72px] max-w-[1680px] items-center justify-between px-4 py-4 sm:px-6 lg:px-14">
-        {/* Still the Admin Hub lockup: the Compass Portugal one is coming from
-            Rafael's DS (2026-10-27). Swap the file and the alt text together.
-            The DS asset as drawn in the main menu
-            (Figma 3393:7331, "brand" 150×40 at the 56px gutter). One file
-            rather than glyph + live text, so the type and spacing are
-            exactly the designer's. */}
+        {/* The Compass Portugal lockup, exported from the DS brand component
+            (Figma 3112:9963, orientation=compassPortugal) as one SVG with the
+            type outlined, so the letterforms and spacing are the designer's.
+            Drawn at its Figma size (378×98, Home frame 3393:7186) from lg up;
+            smaller screens scale it down so it fits beside Menu and Donate. */}
         <Link href="/" className="inline-flex shrink-0">
           <Image
-            src="/admin-hub-logo.svg"
-            alt="Admin Hub, lisbon project"
-            width={150}
-            height={40}
+            src="/compass-portugal-logo.svg"
+            alt="Compass Portugal, by Lisbon Project"
+            width={378}
+            height={98}
             priority
             unoptimized
-            className="h-10 w-auto"
+            className="h-10 w-auto sm:h-14 lg:h-[98px]"
           />
         </Link>
 
