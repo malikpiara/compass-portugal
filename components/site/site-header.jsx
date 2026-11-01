@@ -17,8 +17,10 @@ export function SiteHeader({ sticky = true } = {}) {
         {/* The Compass Portugal lockup, exported from the DS brand component
             (Figma 3112:9963, orientation=compassPortugal) as one SVG with the
             type outlined, so the letterforms and spacing are the designer's.
-            Drawn at its Figma size (378×98, Home frame 3393:7186) from lg up;
-            smaller screens scale it down so it fits beside Menu and Donate. */}
+            Figma draws it at 378×98 (Home frame 3393:7186); on the site that
+            read far too big (Malik, 2026-11-01), so it is 56px tall from lg
+            up (about 216 wide, "by lisbon project" still legible) and steps
+            down to fit beside Menu and Donate on smaller screens. */}
         <Link href="/" className="inline-flex shrink-0">
           <Image
             src="/compass-portugal-logo.svg"
@@ -27,7 +29,7 @@ export function SiteHeader({ sticky = true } = {}) {
             height={98}
             priority
             unoptimized
-            className="h-10 w-auto sm:h-14 lg:h-[98px]"
+            className="h-10 w-auto sm:h-12 lg:h-14"
           />
         </Link>
 
