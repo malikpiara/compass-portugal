@@ -1,25 +1,9 @@
-import Image from "next/image";
 import { QuickAccess } from "@/components/home/quick-access";
 import { SITE_TEXT_DEFAULTS } from "@/lib/site-text-defaults";
 
-function HeroIllustration() {
-  // Faint DS compass behind the hero ("icon-background", Figma Home frame
-  // 3393:7186), exported as is: 800×800, 24px from the section's top and
-  // 40.65px past its right edge, so the section clips its right side and its
-  // bottom runs behind the Quick Access cards. Shown from md up, scaled with
-  // the window (60vw) and capped at the Figma 800px, which it reaches from
-  // ~1340px wide; phones skip it, the text column takes the full width there.
-  return (
-    <Image
-      src="/illustrations/hero-compass.svg"
-      alt=""
-      aria-hidden="true"
-      width={800}
-      height={800}
-      className="pointer-events-none absolute -right-[40.65px] top-6 -z-10 hidden w-[min(60vw,800px)] max-w-none md:block"
-    />
-  );
-}
+// The faint compass behind the hero (public/illustrations/hero-compass.svg,
+// Figma "icon-background") is off for now (2026-11-17). Bring it back from the
+// commit that removed it; the SVG is kept.
 
 // Copy comes from the `site-text` global (editable at /admin/site-text); the
 // defaults keep bare renders (styleguide) identical to the shipped page.
@@ -33,7 +17,6 @@ export function Hero({
     <section className="bg-bg-page">
       <div className="mx-auto max-w-[1680px] px-4 pt-6 sm:px-6 lg:px-14 lg:pt-10">
         <div className="ds-section-padding relative isolate flex flex-col gap-12 overflow-hidden rounded-none xl:rounded-[3.5rem]">
-          <HeroIllustration />
           <div className="max-w-[760px]">
             {/* The icon tile beside the title is hidden in the Compass
                 Portugal frame; the title stands alone. */}
