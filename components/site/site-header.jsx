@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { HomeLogoLink } from "@/components/site/home-logo-link";
 import { buttonVariants } from "@/components/ui/button";
 import { SiteNav } from "@/components/site/site-nav";
 import { DONATE_URL } from "@/lib/site";
@@ -24,7 +24,7 @@ export function SiteHeader({ sticky = true } = {}) {
             the artwork (129.5×55.4). Drawn 48px tall from lg up, a step under
             its Figma 56px (Malik, 2026-11-17), and 40px tall below, beside the
             menu button. */}
-        <Link href="/" className="inline-flex shrink-0">
+        <HomeLogoLink className="inline-flex shrink-0">
           <Image
             src="/compass-portugal-logo.svg"
             alt="Compass Portugal"
@@ -34,7 +34,7 @@ export function SiteHeader({ sticky = true } = {}) {
             unoptimized
             className="h-10 w-auto lg:h-12"
           />
-        </Link>
+        </HomeLogoLink>
 
         <nav className="flex items-center gap-3 sm:gap-4">
           <SiteNav />
