@@ -170,7 +170,10 @@ function CardShortcut({
       )}
       {...props}
     >
-      <div className="flex w-full flex-col gap-0.5">
+      {/* flex-1 takes the card's spare height, so in a row of equal-height
+          cards every action sits on the same bottom line however long the
+          description runs. */}
+      <div className="flex w-full flex-1 flex-col gap-0.5">
         {icon ? (
           <span className="mb-2 flex items-center text-bg-mint [&>svg]:size-14">
             {icon}
