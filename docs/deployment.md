@@ -181,10 +181,11 @@ same repository with the branch as its production branch and
 
 Margin is RoundTwenty's review layer: one script from `margin.roundtwenty.com`
 that lets people holding a review link comment on any page, `/admin` included.
-`lib/margin.js` decides which builds carry it. The preview Worker always does,
-and so does production: Malik keeps it on for the team's reviews (2026-10-08,
-kept through the rename). `MARGIN_ON_PRODUCTION = false` takes it off the live
-site. The same
+`lib/margin.js` decides which builds carry it. The preview Worker always does.
+Production carried it for the team's reviews from 2026-10-08 until the public
+launch on 2026-11-18, when `MARGIN_ON_PRODUCTION` was set to `false`, taking
+Margin and its passcode curtain off the live site. Set it back to `true` only
+for a review round on production. The same
 switch adds Margin's origin and its curtain's Google Fonts to the CSP, and
 every build stamps the commit in `<meta name="margin-version">`.
 
