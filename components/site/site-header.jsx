@@ -5,6 +5,10 @@ import { SiteNav } from "@/components/site/site-nav";
 import { DONATE_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
+// The header's Donate button is hidden for now (2026-11-17). Set back to true
+// to show it again; DONATE_URL in lib/site.ts still holds the destination.
+const SHOW_DONATE = false;
+
 export function SiteHeader({ sticky = true } = {}) {
   return (
     <header
@@ -34,17 +38,19 @@ export function SiteHeader({ sticky = true } = {}) {
 
         <nav className="flex items-center gap-3 sm:gap-4">
           <SiteNav />
-          <a
-            href={DONATE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({
-              size: "lg",
-              className: "px-4",
-            })}
-          >
-            Donate
-          </a>
+          {SHOW_DONATE ? (
+            <a
+              href={DONATE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({
+                size: "lg",
+                className: "px-4",
+              })}
+            >
+              Donate
+            </a>
+          ) : null}
         </nav>
       </div>
     </header>
