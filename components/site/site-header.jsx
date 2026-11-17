@@ -21,8 +21,9 @@ export function SiteHeader({ sticky = true } = {}) {
         {/* The Compass Portugal wordmark (Figma 4043:1063, "Compass" over
             "Portugal", 2026-11-17), exported as one SVG with the type outlined.
             The export's canvas background is removed and its viewBox trimmed to
-            the artwork (129.5×55.4). Drawn at its Figma size from lg up (56px
-            tall) and 40px tall below, beside the menu button. */}
+            the artwork (129.5×55.4). Drawn 48px tall from lg up, a step under
+            its Figma 56px (Malik, 2026-11-17), and 40px tall below, beside the
+            menu button. */}
         <Link href="/" className="inline-flex shrink-0">
           <Image
             src="/compass-portugal-logo.svg"
@@ -31,7 +32,7 @@ export function SiteHeader({ sticky = true } = {}) {
             height={55}
             priority
             unoptimized
-            className="h-10 w-auto lg:h-14"
+            className="h-10 w-auto lg:h-12"
           />
         </Link>
 
